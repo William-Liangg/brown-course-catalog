@@ -31,6 +31,35 @@ const SchedulePage = ({ onNavigate }: Props) => {
     '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM'
   ];
 
+  // Helper function to check if a course day matches a grid day
+  const dayMatches = (courseDays: string, gridDay: string): boolean => {
+    const dayMap: { [key: string]: string[] } = {
+      'Monday': ['M'],
+      'Tuesday': ['T'],
+      'Wednesday': ['W'],
+      'Thursday': ['R'],
+      'Friday': ['F']
+    };
+    
+    const gridDayAbbrevs = dayMap[gridDay];
+    if (!gridDayAbbrevs) return false;
+    
+    return gridDayAbbrevs.some(abbrev => courseDays.includes(abbrev));
+  };
+
+  // Helper function to convert abbreviated days to readable format
+  const formatDays = (days: string): string => {
+    const dayMap: { [key: string]: string } = {
+      'M': 'Mon',
+      'T': 'Tues', 
+      'W': 'Wed',
+      'R': 'Thur',
+      'F': 'Fri'
+    };
+    
+    return days.split('').map(day => dayMap[day] || day).join(', ');
+  };
+
   const fetchSchedule = async () => {
     try {
       setLoading(true);
@@ -43,6 +72,8 @@ const SchedulePage = ({ onNavigate }: Props) => {
       
       const data = await res.json();
       console.log('Fetched schedule data:', data);
+      console.log('Sample course data:', data.schedule[0]);
+      console.log('Course days format:', data.schedule.map((c: any) => ({ code: c.code, days: c.days, start_time: c.start_time })));
       setSchedule(data.schedule);
       console.log('Set schedule state to:', data.schedule);
     } catch (err: any) {
@@ -249,10 +280,11 @@ const SchedulePage = ({ onNavigate }: Props) => {
                     {days.map(day => {
                       const course = filteredSchedule.find(c => {
                         const courseTimeIndex = getTimeSlotIndex(c.start_time);
-                        const dayMatch = c.days.includes(day);
+                        const dayMatch = dayMatches(c.days, day);
                         const timeMatch = courseTimeIndex === timeIndex;
                         
-                        console.log(`Checking course ${c.code}: dayMatch=${dayMatch} (${c.days} includes ${day}), timeMatch=${timeMatch} (${courseTimeIndex} === ${timeIndex})`);
+                        console.log(`Checking course ${c.code}: days="${c.days}", gridDay="${day}"`);
+                        console.log(`  dayMatch=${dayMatch}, timeMatch=${timeMatch} (${courseTimeIndex} === ${timeIndex})`);
                         
                         return dayMatch && timeMatch;
                       });
@@ -277,6 +309,9 @@ const SchedulePage = ({ onNavigate }: Props) => {
                             </div>
                             <div className="text-xs text-gray-700 mb-1 truncate">
                               {course.name}
+                            </div>
+                            <div className="text-xs text-gray-600 mb-2">
+                              {formatDays(course.days)}
                             </div>
                             <div className="text-xs text-gray-600 mb-2">
                               {formatTime(course.start_time)} - {formatTime(course.end_time)}
@@ -351,7 +386,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
               <div className="space-y-4 mb-6">
                 <div className="flex items-center text-gray-700">
                   <Calendar className="w-5 h-5 text-amber-900 mr-3" />
-                  <span className="font-medium text-lg">{selectedCourse.days}</span>
+                  <span className="font-medium text-lg">{formatDays(selectedCourse.days)}</span>
                 </div>
                 <div className="flex items-center text-gray-700">
                   <Clock className="w-5 h-5 text-amber-900 mr-3" />
@@ -406,4 +441,4 @@ const SchedulePage = ({ onNavigate }: Props) => {
   );
 };
 
-export default SchedulePage; 
+export default SchedulePage;
