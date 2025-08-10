@@ -1,8 +1,11 @@
+// hashes passwords, generates JWT tokens, and interacts with the database for user authentication.
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../models/db.cjs');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'changeme';
+// store API keys
+
+const JWT_SECRET = process.env.JWT_SECRET || 'securesecuresecurekey';
 
 exports.signup = async (req, res) => {
   const { email, password } = req.body;
@@ -24,6 +27,8 @@ exports.signup = async (req, res) => {
     res.status(500).json({ error: 'Registration failed' });
   }
 };
+
+// error handling for login and getMe functions
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;

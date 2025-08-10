@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import LoginPage from './LoginPage';
 import SignupPage from './SignupPage';
+import CoursesPage from './CoursesPage';
 
 interface NavbarProps {
   onNavigate: (route: string) => void;
@@ -52,6 +53,7 @@ const App = () => {
   let content;
   if (route === 'login') content = <LoginPage onNavigate={setRoute} />;
   else if (route === 'signup') content = <SignupPage onNavigate={setRoute} />;
+  else if (route === 'courses') content = <CoursesPage onNavigate={setRoute} />;
   else content = (
     <main className="container mx-auto px-4 py-8">
       <div className="text-center">
