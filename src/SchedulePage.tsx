@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Trash2, X, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Trash2, X, AlertTriangle, User } from 'lucide-react';
 
 interface ScheduledCourse {
   id: number;
@@ -11,6 +11,7 @@ interface ScheduledCourse {
   end_time: string;
   location: string;
   term: string;
+  professor: string;
 }
 
 interface Props {
@@ -331,6 +332,9 @@ const SchedulePage = ({ onNavigate }: Props) => {
                             <div className="text-xs text-gray-600 mb-2">
                               {course.location}
                             </div>
+                            <div className="text-xs text-gray-600 mb-2">
+                              {course.professor || 'TBA'}
+                            </div>
                             {hasConflict && (
                               <div className="space-y-2 mb-2">
                                 <div className="flex items-center text-xs text-red-700 bg-red-100 px-2 py-1 rounded border border-red-300">
@@ -422,6 +426,10 @@ const SchedulePage = ({ onNavigate }: Props) => {
                   <span className="font-medium text-lg">{selectedCourse.location}</span>
                 </div>
                 <div className="flex items-center text-gray-700">
+                  <User className="w-5 h-5 text-amber-900 mr-3" />
+                  <span className="font-medium text-lg">{selectedCourse.professor || 'TBA'}</span>
+                </div>
+                <div className="flex items-center text-gray-700">
                   <Calendar className="w-5 h-5 text-amber-900 mr-3" />
                   <span className="font-medium text-lg">{selectedCourse.term}</span>
                 </div>
@@ -454,9 +462,9 @@ const SchedulePage = ({ onNavigate }: Props) => {
                         .map((conflict, index) => (
                           <li key={index} className="text-red-700 border-l-2 border-red-400 pl-3 py-1">
                             <div className="font-medium text-sm">{conflict.code} - {conflict.name}</div>
-                            <div className="text-red-600 text-xs">
-                              {formatDays(conflict.days)} • {formatTime(conflict.start_time)} - {formatTime(conflict.end_time)}
-                            </div>
+                                                    <div className="text-red-600 text-xs">
+                          {formatDays(conflict.days)} • {formatTime(conflict.start_time)} - {formatTime(conflict.end_time)} • {conflict.professor || 'TBA'}
+                        </div>
                           </li>
                         ))}
                     </ul>
@@ -528,7 +536,8 @@ const SchedulePage = ({ onNavigate }: Props) => {
                         <div className="font-semibold text-gray-900">{conflict.code} - {conflict.name}</div>
                         <div className="text-red-700 text-sm mt-1">
                           <span className="font-medium">Days:</span> {formatDays(conflict.days)} • 
-                          <span className="font-medium ml-2">Time:</span> {formatTime(conflict.start_time)} - {formatTime(conflict.end_time)}
+                          <span className="font-medium ml-2">Time:</span> {formatTime(conflict.start_time)} - {formatTime(conflict.end_time)} • 
+                          <span className="font-medium ml-2">Professor:</span> {conflict.professor || 'TBA'}
                         </div>
                       </div>
                     ))}

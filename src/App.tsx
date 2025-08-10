@@ -16,8 +16,13 @@ const Navbar = ({ onNavigate, isLoggedIn, onLogout }: NavbarProps) => {
   return (
     <nav className="bg-amber-900 text-white p-5 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-2xl font-bold cursor-pointer" onClick={() => onNavigate("home")}>
-          BrunoTrack
+        <div className="flex items-center cursor-pointer" onClick={() => onNavigate("home")}>
+          <img 
+            src="/brown-logo.png" 
+            alt="Brown University Logo" 
+            className="h-8 w-8 mr-3"
+          />
+          <span className="text-2xl font-bold">BrunoTrack</span>
         </div>
         <div className="space-x-6">
           <button
@@ -76,6 +81,7 @@ const App = () => {
       end_time: string;
     }>;
   } | null>(null);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem('token'));
@@ -93,18 +99,57 @@ const App = () => {
     setRoute('home');
   };
 
+  const handleNavigate = (newRoute: string) => {
+    // Check if user is trying to access schedule without being logged in
+    if (newRoute === 'schedule' && !isLoggedIn) {
+      setShowAuthPopup(true);
+      return;
+    }
+    
+    // For other routes, navigate normally
+    setRoute(newRoute);
+  };
+
   let content;
-  if (route === 'login') content = <LoginPage onNavigate={setRoute} />;
-  else if (route === 'signup') content = <SignupPage onNavigate={setRoute} />;
-  else if (route === 'courses') content = <CoursesPage onNavigate={setRoute} conflictError={conflictError} setConflictError={setConflictError} />;
-  else if (route === 'schedule') content = <SchedulePage onNavigate={setRoute} />;
-  else if (route === 'profile') content = <ProfilePage onNavigate={setRoute} onLogout={handleLogout} />;
-  else content = <HomePage onNavigate={setRoute} isLoggedIn={isLoggedIn} />;
+  if (route === 'login') content = <LoginPage onNavigate={handleNavigate} />;
+  else if (route === 'signup') content = <SignupPage onNavigate={handleNavigate} />;
+  else if (route === 'courses') content = <CoursesPage onNavigate={handleNavigate} conflictError={conflictError} setConflictError={setConflictError} isLoggedIn={isLoggedIn} />;
+  else if (route === 'schedule') content = <SchedulePage onNavigate={handleNavigate} />;
+  else if (route === 'profile') content = <ProfilePage onNavigate={handleNavigate} onLogout={handleLogout} />;
+  else content = <HomePage onNavigate={handleNavigate} isLoggedIn={isLoggedIn} />;
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar onNavigate={setRoute} isLoggedIn={isLoggedIn} onLogout={handleLogout} />
+      <Navbar onNavigate={handleNavigate} isLoggedIn={isLoggedIn} onLogout={handleLogout} />
       {content}
+
+      {/* Authentication Required Popup */}
+      {showAuthPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md mx-4 transform transition-all duration-300 animate-scaleIn">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-6 h-6 text-amber-600 mr-3">🔒</div>
+                <h3 className="text-xl font-semibold text-gray-900">Authentication Required</h3>
+              </div>
+              
+              <p className="text-gray-700 mb-6 text-center">
+                You must sign in to save and manage your schedule.
+              </p>
+              
+              <button
+                onClick={() => {
+                  setShowAuthPopup(false);
+                  setRoute('login');
+                }}
+                className="w-full bg-amber-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200"
+              >
+                Go to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

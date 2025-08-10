@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, BookOpen, Clock, MapPin, Calendar, Plus, AlertTriangle } from "lucide-react";
+import { Search, BookOpen, Clock, MapPin, Calendar, Plus, AlertTriangle, CheckCircle, User } from "lucide-react";
 
 interface Course {
   id: number;
@@ -10,6 +10,7 @@ interface Course {
   start_time: string;
   end_time: string;
   location: string;
+  professor: string;
 }
 
 interface Props {
@@ -34,9 +35,10 @@ interface Props {
       end_time: string;
     }>;
   } | null>>;
+  isLoggedIn: boolean;
 }
 
-const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => {
+const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }: Props) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -44,6 +46,8 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => 
   const [addingCourse, setAddingCourse] = useState<number | null>(null);
   const [selectedTerm, setSelectedTerm] = useState('Fall 2025');
   const [addError, setAddError] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const fetchCourses = async (searchQuery?: string) => {
     try {
@@ -63,6 +67,12 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => 
   };
 
   const addToSchedule = async (courseId: number) => {
+    // Check if user is logged in
+    if (!isLoggedIn) {
+      setAddError('You must sign in to add courses to your schedule');
+      return;
+    }
+
     try {
       console.log('Adding course to schedule:', courseId, 'for term:', selectedTerm);
       setAddingCourse(courseId);
@@ -98,7 +108,10 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => 
       }
 
       // Show success message
-      alert('Course added to schedule successfully!');
+      setSuccessMessage('Course added to schedule successfully!');
+      setShowSuccess(true);
+      // Auto-hide after 3 seconds
+      setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
       console.error('Error in addToSchedule:', err);
       setAddError(err.message);
@@ -184,17 +197,91 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => 
       {/* Courses Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto">
+          {/* Error Message Modal */}
           {error && (
-            <div className="mb-8 p-6 bg-red-100 border border-red-400 text-red-700 rounded-xl max-w-2xl mx-auto text-center">
-              <div className="text-lg font-semibold mb-2">Error</div>
-              {error}
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+              <div className="bg-white rounded-xl shadow-2xl max-w-md mx-4 transform transition-all duration-300 animate-scaleIn">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+                    <h3 className="text-xl font-semibold text-gray-900">Error</h3>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6 text-center">
+                    {error}
+                  </p>
+                  
+                  <button
+                    onClick={() => setError('')}
+                    className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
+          {/* Add Error Message Modal */}
           {addError && (
-            <div className="mb-8 p-6 bg-red-100 border border-red-400 text-red-700 rounded-xl max-w-2xl mx-auto text-center">
-              <div className="text-lg font-semibold mb-2">Error Adding Course</div>
-              {addError}
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+              <div className="bg-white rounded-xl shadow-2xl max-w-md mx-4 transform transition-all duration-300 animate-scaleIn">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+                    <h3 className="text-xl font-semibold text-gray-900">Error Adding Course</h3>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6 text-center">
+                    {addError}
+                  </p>
+                  
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setAddError('')}
+                      className="flex-1 bg-gray-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-600 transition-colors duration-200"
+                    >
+                      Cancel
+                    </button>
+                    {addError === 'You must sign in to add courses to your schedule' && (
+                      <button
+                        onClick={() => {
+                          setAddError('');
+                          onNavigate('login');
+                        }}
+                        className="flex-1 bg-amber-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200"
+                      >
+                        Go to Login
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Success Message Modal */}
+          {showSuccess && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+              <div className="bg-white rounded-xl shadow-2xl max-w-md mx-4 transform transition-all duration-300 animate-scaleIn">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <CheckCircle className="w-6 h-6 text-green-600 mr-3" />
+                    <h3 className="text-xl font-semibold text-gray-900">Success!</h3>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6 text-center">
+                    {successMessage}
+                  </p>
+                  
+                  <button
+                    onClick={() => setShowSuccess(false)}
+                    className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-200"
+                  >
+                    OK
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -268,8 +355,12 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => 
                         </span>
                       </div>
                       <div className="flex items-center text-gray-700">
+                        <User className="w-5 h-5 text-amber-900 mr-3" />
+                        <span className="font-medium">{course.professor || 'TBA'}</span>
+                      </div>
+                      <div className="flex items-center text-gray-700">
                         <MapPin className="w-5 h-5 text-amber-900 mr-3" />
-                        <span className="font-medium">{course.location}</span>
+                        <span className="font-medium">{course.location || 'TBA'}</span>
                       </div>
                     </div>
                   </div>
@@ -288,12 +379,21 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => 
                     <button 
                       onClick={() => addToSchedule(course.id)}
                       disabled={addingCourse === course.id}
-                      className="w-full bg-amber-900 text-white py-3 px-4 rounded-lg font-semibold hover:bg-amber-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                      className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
+                        isLoggedIn 
+                          ? 'bg-amber-900 text-white hover:bg-amber-800' 
+                          : 'bg-gray-400 text-gray-600 hover:bg-gray-500'
+                      }`}
                     >
                       {addingCourse === course.id ? (
                         <>
                           <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                           Adding...
+                        </>
+                      ) : !isLoggedIn ? (
+                        <>
+                          <div className="w-4 h-4 mr-2">🔒</div>
+                          Sign in to Add
                         </>
                       ) : (
                         <>
@@ -329,7 +429,7 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => 
             onClick={() => onNavigate("schedule")}
             className="bg-white text-amber-900 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors"
           >
-            Plan My Schedule
+            {isLoggedIn ? "Plan My Schedule" : "Sign in to Plan Schedule"}
           </button>
         </div>
       </section>

@@ -6,5 +6,6 @@ CREATE TABLE courses (
   days VARCHAR(20),
   start_time TIME,
   end_time TIME,
-  location VARCHAR(100)
+  location VARCHAR(100),
+  professor VARCHAR(100)
 ); 
