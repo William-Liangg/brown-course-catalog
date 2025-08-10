@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import LoginPage from './LoginPage';
 import SignupPage from './SignupPage';
 import CoursesPage from './CoursesPage';
+import HomePage from './HomePage';
+import SchedulePage from './SchedulePage';
 
 interface NavbarProps {
   onNavigate: (route: string) => void;
@@ -11,30 +13,51 @@ interface NavbarProps {
 
 const Navbar = ({ onNavigate, isLoggedIn, onLogout }: NavbarProps) => {
   return (
-    <nav className="bg-amber-900 text-white p-4 shadow-lg">
+    <nav className="bg-amber-900 text-white p-5 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-xl font-bold">
-          Brown Course Catalog
+        <div className="text-2xl font-bold cursor-pointer" onClick={() => onNavigate("home")}>
+          BrunoTrack
         </div>
         <div className="space-x-6">
-          <button onClick={() => onNavigate('home')} className="hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer">Home</button>
-          <button onClick={() => onNavigate('courses')} className="hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer">Courses</button>
-          <button onClick={() => onNavigate('schedule')} className="hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer">Schedule</button>
+          <button
+            onClick={() => onNavigate("home")}
+            className="text-lg hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer"
+          >
+            Home
+          </button>
+          <button
+            onClick={() => onNavigate("courses")}
+            className="text-lg hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer"
+          >
+            Courses
+          </button>
+          <button
+            onClick={() => onNavigate("schedule")}
+            className="text-lg hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer"
+          >
+            Schedule
+          </button>
           {!isLoggedIn && (
-            <button onClick={() => onNavigate('login')} className="hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer">Log in</button>
+            <button
+              onClick={() => onNavigate("login")}
+              className="text-lg hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer"
+            >
+              Login
+            </button>
           )}
           {isLoggedIn && (
-            <button onClick={onLogout} className="hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer">Log out</button>
+            <button
+              onClick={onLogout}
+              className="text-lg hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer"
+            >
+              Logout
+            </button>
           )}
         </div>
       </div>
     </nav>
   );
 };
-
-interface PageProps {
-  onNavigate: (route: string) => void;
-}
 
 const App = () => {
   const [route, setRoute] = useState('home');
@@ -54,22 +77,12 @@ const App = () => {
   if (route === 'login') content = <LoginPage onNavigate={setRoute} />;
   else if (route === 'signup') content = <SignupPage onNavigate={setRoute} />;
   else if (route === 'courses') content = <CoursesPage onNavigate={setRoute} />;
-  else content = (
-    <main className="container mx-auto px-4 py-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          Trouble Picking Classes?
-        </h1>
-        <p className="text-lg text-gray-600">
-          Welcome to Brown Course Catalog
-        </p>
-      </div>
-    </main>
-  );
+  else if (route === 'schedule') content = <SchedulePage onNavigate={setRoute} />;
+  else content = <HomePage onNavigate={setRoute} isLoggedIn={isLoggedIn} />;
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <Navbar onNavigate={setRoute} isLoggedIn={isLoggedIn} onLogout={handleLogout}/>
+      <Navbar onNavigate={setRoute} isLoggedIn={isLoggedIn} onLogout={handleLogout} />
       {content}
     </div>
   );
