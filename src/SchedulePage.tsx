@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Trash2, X, AlertTriangle } from 'lucide-react';
 
 interface ScheduledCourse {
@@ -21,9 +21,11 @@ const SchedulePage = ({ onNavigate }: Props) => {
   const [schedule, setSchedule] = useState<ScheduledCourse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedTerm, setSelectedTerm] = useState('Fall 2024');
+  const [selectedTerm, setSelectedTerm] = useState('Fall 2025');
   const [selectedCourse, setSelectedCourse] = useState<ScheduledCourse | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showConflictModal, setShowConflictModal] = useState(false);
+  const [conflictInfo, setConflictInfo] = useState<{ course: ScheduledCourse; conflicts: ScheduledCourse[] } | null>(null);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
   const timeSlots = [
@@ -71,11 +73,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
       }
       
       const data = await res.json();
-      console.log('Fetched schedule data:', data);
-      console.log('Sample course data:', data.schedule[0]);
-      console.log('Course days format:', data.schedule.map((c: any) => ({ code: c.code, days: c.days, start_time: c.start_time })));
       setSchedule(data.schedule);
-      console.log('Set schedule state to:', data.schedule);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -111,9 +109,31 @@ const SchedulePage = ({ onNavigate }: Props) => {
     setShowModal(true);
   };
 
+  const showConflictDetails = (course: ScheduledCourse) => {
+    const conflicts = schedule.filter(otherCourse => 
+      otherCourse.id !== course.id &&
+      otherCourse.days === course.days &&
+      otherCourse.term === course.term &&
+      !(
+        course.end_time <= otherCourse.start_time || 
+        course.start_time >= otherCourse.end_time
+      )
+    );
+    
+    if (conflicts.length > 0) {
+      setConflictInfo({ course, conflicts });
+      setShowConflictModal(true);
+    }
+  };
+
   const closeModal = () => {
     setShowModal(false);
     setSelectedCourse(null);
+  };
+
+  const closeConflictModal = () => {
+    setShowConflictModal(false);
+    setConflictInfo(null);
   };
 
   useEffect(() => {
@@ -129,8 +149,6 @@ const SchedulePage = ({ onNavigate }: Props) => {
   };
 
   const getTimeSlotIndex = (time: string) => {
-    console.log('getTimeSlotIndex called with time:', time);
-    
     // Handle different time formats
     let hour: number;
     
@@ -143,13 +161,10 @@ const SchedulePage = ({ onNavigate }: Props) => {
       hour = new Date(`2000-01-01T${time}`).getHours();
     }
     
-    console.log('Parsed hour:', hour);
     const index = hour - 8; // 8 AM is index 0
-    console.log('Calculated index:', index, 'for hour:', hour);
     
     // Ensure index is valid
     if (index < 0 || index >= timeSlots.length) {
-      console.warn(`Invalid time index ${index} for time ${time}, hour ${hour}`);
       return -1; // Return invalid index
     }
     
@@ -175,27 +190,28 @@ const SchedulePage = ({ onNavigate }: Props) => {
     }
     
     const span = endHour - startHour;
-    console.log(`getTimeSlotSpan: ${startTime} (${startHour}h) to ${endTime} (${endHour}h) = ${span} slots`);
     return Math.max(1, span); // Minimum 1 slot
   };
 
   const checkConflicts = (course: ScheduledCourse) => {
-    return schedule.some(otherCourse => 
-      otherCourse.id !== course.id &&
-      otherCourse.days === course.days &&
-      otherCourse.term === course.term &&
-      (
-        (otherCourse.start_time <= course.start_time && otherCourse.end_time > course.start_time) ||
-        (otherCourse.start_time < course.end_time && otherCourse.end_time >= course.end_time) ||
-        (otherCourse.start_time >= course.start_time && otherCourse.end_time <= course.end_time)
-      )
-    );
+    const conflicts = schedule.filter(otherCourse => {
+      if (otherCourse.id === course.id) return false;
+      if (otherCourse.days !== course.days) return false;
+      if (otherCourse.term !== course.term) return false;
+      
+      // Check for time overlap using string comparison (since times are in HH:MM:SS format)
+      const hasOverlap = !(
+        course.end_time <= otherCourse.start_time || 
+        course.start_time >= otherCourse.end_time
+      );
+      
+      return hasOverlap;
+    });
+    
+    return conflicts.length > 0;
   };
 
   const filteredSchedule = schedule.filter(course => course.term === selectedTerm);
-  console.log('Selected term:', selectedTerm);
-  console.log('Full schedule:', schedule);
-  console.log('Filtered schedule for term:', filteredSchedule);
 
   if (loading) {
     return (
@@ -230,9 +246,8 @@ const SchedulePage = ({ onNavigate }: Props) => {
               onChange={(e) => setSelectedTerm(e.target.value)}
               className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             >
-              <option value="Fall 2024">Fall 2024</option>
+              <option value="Fall 2025">Fall 2025</option>
               <option value="Spring 2025">Spring 2025</option>
-              <option value="Summer 2025">Summer 2025</option>
             </select>
           </div>
 
@@ -241,6 +256,8 @@ const SchedulePage = ({ onNavigate }: Props) => {
               {error}
             </div>
           )}
+          
+
         </div>
       </section>
 
@@ -283,24 +300,19 @@ const SchedulePage = ({ onNavigate }: Props) => {
                         const dayMatch = dayMatches(c.days, day);
                         const timeMatch = courseTimeIndex === timeIndex;
                         
-                        console.log(`Checking course ${c.code}: days="${c.days}", gridDay="${day}"`);
-                        console.log(`  dayMatch=${dayMatch}, timeMatch=${timeMatch} (${courseTimeIndex} === ${timeIndex})`);
-                        
                         return dayMatch && timeMatch;
                       });
-                      
-                      console.log(`Looking for course on ${day} at timeIndex ${timeIndex}`);
-                      console.log('filteredSchedule:', filteredSchedule);
-                      console.log('Found course:', course);
                       
                       if (course) {
                         const span = getTimeSlotSpan(course.start_time, course.end_time);
                         const hasConflict = checkConflicts(course);
                         
+
+                        
                         return (
                           <div
                             key={`${day}-${timeIndex}`}
-                            className={`p-2 border-b border-gray-200 ${hasConflict ? 'bg-red-100 border-red-300' : 'bg-amber-50'} cursor-pointer hover:bg-amber-100 transition-colors`}
+                            className={`p-2 border-b border-gray-200 ${hasConflict ? 'bg-red-50 border-red-400 shadow-sm' : 'bg-amber-50'} cursor-pointer hover:${hasConflict ? 'bg-red-100' : 'bg-amber-100'} transition-colors`}
                             style={{ gridRow: `span ${Math.max(1, span)}` }}
                             onClick={() => openCourseModal(course)}
                           >
@@ -320,9 +332,20 @@ const SchedulePage = ({ onNavigate }: Props) => {
                               {course.location}
                             </div>
                             {hasConflict && (
-                              <div className="flex items-center text-xs text-red-600 mb-2">
-                                <AlertTriangle className="w-3 h-3 mr-1" />
-                                Conflict
+                              <div className="space-y-2 mb-2">
+                                <div className="flex items-center text-xs text-red-700 bg-red-100 px-2 py-1 rounded border border-red-300">
+                                  <AlertTriangle className="w-3 h-3 mr-1" />
+                                  <span className="font-semibold">Time Conflict</span>
+                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    showConflictDetails(course);
+                                  }}
+                                  className="text-xs text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded border border-red-300 transition-colors"
+                                >
+                                  View Conflicts
+                                </button>
                               </div>
                             )}
                             <button
@@ -406,14 +429,38 @@ const SchedulePage = ({ onNavigate }: Props) => {
 
               {/* Conflict Warning */}
               {checkConflicts(selectedCourse) && (
-                <div className="mb-6 p-4 bg-red-100 border border-red-300 rounded-lg">
-                  <div className="flex items-center text-red-700">
+                <div className="mb-6 p-4 bg-red-50 border border-red-300 rounded-lg">
+                  <div className="flex items-center text-red-700 mb-3">
                     <AlertTriangle className="w-5 h-5 mr-2" />
-                    <span className="font-semibold">Time Conflict Detected</span>
+                    <span className="font-semibold text-lg">Schedule Time Conflict</span>
                   </div>
-                  <p className="text-red-600 mt-2">
-                    This course conflicts with another course in your schedule. Please resolve the conflict.
+                  <p className="text-red-600 mb-3">
+                    This course conflicts with other courses in your schedule for {selectedCourse.term}.
                   </p>
+                  <div className="bg-white p-3 rounded-lg border border-red-200">
+                    <div className="font-semibold mb-2 text-red-800 text-sm">Conflicting courses:</div>
+                    <ul className="space-y-2">
+                      {schedule
+                        .filter(otherCourse => 
+                          otherCourse.id !== selectedCourse.id &&
+                          otherCourse.days === selectedCourse.days &&
+                          otherCourse.term === selectedCourse.term &&
+                          (
+                            (otherCourse.start_time <= selectedCourse.start_time && otherCourse.end_time > selectedCourse.start_time) ||
+                            (otherCourse.start_time < selectedCourse.end_time && otherCourse.end_time >= selectedCourse.end_time) ||
+                            (otherCourse.start_time >= selectedCourse.start_time && otherCourse.end_time <= selectedCourse.end_time)
+                          )
+                        )
+                        .map((conflict, index) => (
+                          <li key={index} className="text-red-700 border-l-2 border-red-400 pl-3 py-1">
+                            <div className="font-medium text-sm">{conflict.code} - {conflict.name}</div>
+                            <div className="text-red-600 text-xs">
+                              {formatDays(conflict.days)} • {formatTime(conflict.start_time)} - {formatTime(conflict.end_time)}
+                            </div>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
                 </div>
               )}
 
@@ -428,6 +475,78 @@ const SchedulePage = ({ onNavigate }: Props) => {
                 </button>
                 <button
                   onClick={closeModal}
+                  className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Conflict Details Modal */}
+      {showConflictModal && conflictInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <div className="bg-red-100 text-red-900 px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
+                    ⚠️ Time Conflict
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Schedule Conflict Detected
+                  </h2>
+                </div>
+                <button
+                  onClick={closeConflictModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Conflict Details */}
+              <div className="mb-6">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                  <div className="font-semibold text-red-800 mb-2">Course with Conflict:</div>
+                  <div className="text-lg font-medium text-gray-900 mb-1">
+                    {conflictInfo.course.code} - {conflictInfo.course.name}
+                  </div>
+                  <div className="text-red-700">
+                    {formatDays(conflictInfo.course.days)} • {formatTime(conflictInfo.course.start_time)} - {formatTime(conflictInfo.course.end_time)}
+                  </div>
+                </div>
+
+                <div className="bg-white border border-red-200 rounded-lg p-4">
+                  <div className="font-semibold text-red-800 mb-3">Conflicting Courses:</div>
+                  <div className="space-y-3">
+                    {conflictInfo.conflicts.map((conflict, index) => (
+                      <div key={index} className="border-l-4 border-red-400 pl-4 py-2 bg-red-50 rounded-r-lg">
+                        <div className="font-semibold text-gray-900">{conflict.code} - {conflict.name}</div>
+                        <div className="text-red-700 text-sm mt-1">
+                          <span className="font-medium">Days:</span> {formatDays(conflict.days)} • 
+                          <span className="font-medium ml-2">Time:</span> {formatTime(conflict.start_time)} - {formatTime(conflict.end_time)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4">
+                <button
+                  onClick={() => removeFromSchedule(conflictInfo.course.id)}
+                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Remove Conflicting Course
+                </button>
+                <button
+                  onClick={closeConflictModal}
                   className="flex-1 bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
                 >
                   Close

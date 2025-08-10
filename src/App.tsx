@@ -4,6 +4,7 @@ import SignupPage from './SignupPage';
 import CoursesPage from './CoursesPage';
 import HomePage from './HomePage';
 import SchedulePage from './SchedulePage';
+import ProfilePage from './ProfilePage';
 
 interface NavbarProps {
   onNavigate: (route: string) => void;
@@ -47,10 +48,10 @@ const Navbar = ({ onNavigate, isLoggedIn, onLogout }: NavbarProps) => {
           )}
           {isLoggedIn && (
             <button
-              onClick={onLogout}
+              onClick={() => onNavigate("profile")}
               className="text-lg hover:text-amber-200 transition-colors bg-transparent border-none cursor-pointer"
             >
-              Logout
+              My Profile
             </button>
           )}
         </div>
@@ -60,15 +61,34 @@ const Navbar = ({ onNavigate, isLoggedIn, onLogout }: NavbarProps) => {
 };
 
 const App = () => {
-  const [route, setRoute] = useState('home');
+  const [route, setRoute] = useState(() => {
+    // Get the saved route from localStorage, default to 'home'
+    return localStorage.getItem('currentRoute') || 'home';
+  });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [conflictError, setConflictError] = useState<{
+    message: string;
+    conflicts: Array<{
+      code: string;
+      name: string;
+      days: string;
+      start_time: string;
+      end_time: string;
+    }>;
+  } | null>(null);
 
   useEffect(() => {
     setIsLoggedIn(!!localStorage.getItem('token'));
   }, [route]);
 
+  // Save the current route to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('currentRoute', route);
+  }, [route]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userEmail');
     setIsLoggedIn(false);
     setRoute('home');
   };
@@ -76,8 +96,9 @@ const App = () => {
   let content;
   if (route === 'login') content = <LoginPage onNavigate={setRoute} />;
   else if (route === 'signup') content = <SignupPage onNavigate={setRoute} />;
-  else if (route === 'courses') content = <CoursesPage onNavigate={setRoute} />;
+  else if (route === 'courses') content = <CoursesPage onNavigate={setRoute} conflictError={conflictError} setConflictError={setConflictError} />;
   else if (route === 'schedule') content = <SchedulePage onNavigate={setRoute} />;
+  else if (route === 'profile') content = <ProfilePage onNavigate={setRoute} onLogout={handleLogout} />;
   else content = <HomePage onNavigate={setRoute} isLoggedIn={isLoggedIn} />;
 
   return (
