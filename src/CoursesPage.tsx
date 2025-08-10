@@ -14,15 +14,35 @@ interface Course {
 
 interface Props {
   onNavigate: (route: string) => void;
+  conflictError: {
+    message: string;
+    conflicts: Array<{
+      code: string;
+      name: string;
+      days: string;
+      start_time: string;
+      end_time: string;
+    }>;
+  } | null;
+  setConflictError: React.Dispatch<React.SetStateAction<{
+    message: string;
+    conflicts: Array<{
+      code: string;
+      name: string;
+      days: string;
+      start_time: string;
+      end_time: string;
+    }>;
+  } | null>>;
 }
 
-const CoursesPage = ({ onNavigate }: Props) => {
+const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [addingCourse, setAddingCourse] = useState<number | null>(null);
-  const [selectedTerm, setSelectedTerm] = useState('Fall 2024');
+  const [selectedTerm, setSelectedTerm] = useState('Fall 2025');
   const [addError, setAddError] = useState('');
 
   const fetchCourses = async (searchQuery?: string) => {
@@ -44,20 +64,16 @@ const CoursesPage = ({ onNavigate }: Props) => {
 
   const addToSchedule = async (courseId: number) => {
     try {
+      console.log('Adding course to schedule:', courseId, 'for term:', selectedTerm);
       setAddingCourse(courseId);
       setAddError('');
+      setConflictError(null);
       
-      const token = localStorage.getItem('token');
-      if (!token) {
-        onNavigate('login');
-        return;
-      }
-
+      // For demo purposes, make request without authentication
       const res = await fetch('/api/schedule', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           courseId,
@@ -66,10 +82,16 @@ const CoursesPage = ({ onNavigate }: Props) => {
       });
 
       const data = await res.json();
+      console.log('Response status:', res.status);
+      console.log('Response data:', data);
       
       if (!res.ok) {
-        if (res.status === 401) {
-          onNavigate('login');
+        if (res.status === 400 && data.error === 'Time conflict detected') {
+          console.log('Setting conflict error:', data);
+          setConflictError({
+            message: 'This course cannot be added because it conflicts with courses already in your schedule',
+            conflicts: data.conflicts || []
+          });
           return;
         }
         throw new Error(data.error || 'Failed to add course to schedule');
@@ -78,6 +100,7 @@ const CoursesPage = ({ onNavigate }: Props) => {
       // Show success message
       alert('Course added to schedule successfully!');
     } catch (err: any) {
+      console.error('Error in addToSchedule:', err);
       setAddError(err.message);
     } finally {
       setAddingCourse(null);
@@ -87,6 +110,11 @@ const CoursesPage = ({ onNavigate }: Props) => {
   useEffect(() => {
     fetchCourses();
   }, []);
+
+  // Debug: Log when conflictError changes
+  useEffect(() => {
+    console.log('conflictError state changed:', conflictError);
+  }, [conflictError]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,6 +198,44 @@ const CoursesPage = ({ onNavigate }: Props) => {
             </div>
           )}
 
+          {/* Conflict Error Modal */}
+          {conflictError && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+              <div className="bg-white rounded-xl shadow-2xl max-w-md mx-4 transform transition-all duration-300 animate-scaleIn">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+                    <h3 className="text-xl font-semibold text-gray-900">Schedule Time Conflict</h3>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-4">
+                    This course cannot be added because it conflicts with courses already in your schedule for {selectedTerm}.
+                  </p>
+                  
+                  <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                    <div className="font-semibold text-gray-800 mb-2 flex items-center">
+                      <Clock className="w-4 h-4 mr-2" />
+                      Conflicting Course:
+                    </div>
+                    <div className="text-sm text-gray-700">
+                      <div className="font-medium">{conflictError.conflicts[0].code} - {conflictError.conflicts[0].name}</div>
+                      <div className="text-gray-600">
+                        {formatDays(conflictError.conflicts[0].days)} • {formatTime(conflictError.conflicts[0].start_time)} - {formatTime(conflictError.conflicts[0].end_time)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => setConflictError(null)}
+                    className="w-full bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200"
+                  >
+                    OK, I Understand
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="text-center py-16">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-900 mb-4"></div>
@@ -215,9 +281,8 @@ const CoursesPage = ({ onNavigate }: Props) => {
                         onChange={(e) => setSelectedTerm(e.target.value)}
                         className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
                       >
-                        <option value="Fall 2024">Fall 2024</option>
+                        <option value="Fall 2025">Fall 2025</option>
                         <option value="Spring 2025">Spring 2025</option>
-                        <option value="Summer 2025">Summer 2025</option>
                       </select>
                     </div>
                     <button 

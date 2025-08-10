@@ -1,4 +1,4 @@
-import { GraduationCap, Search, Calendar, Users, BookOpen, Star } from "lucide-react"
+import { GraduationCap, Search, Calendar, Users } from "lucide-react"
 
 interface HomePageProps {
   onNavigate: (route: string) => void

@@ -19,8 +19,12 @@ const SignupPage = ({ onNavigate }: Props) => {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
+      console.log('Signup response data:', data);
       if (!res.ok) throw new Error(data.error || 'Signup failed');
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userEmail', data.user.email);
+      console.log('Stored token:', data.token);
+      console.log('Stored userEmail:', data.user.email);
       onNavigate('home');
     } catch (err: any) {
       setError(err.message);
