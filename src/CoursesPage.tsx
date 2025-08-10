@@ -244,33 +244,33 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError }: Props) => 
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {courses.map((course) => (
-                <div key={course.id} className="bg-white rounded-xl shadow-lg p-8 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out border border-gray-100 hover:border-amber-200">
-                  <div className="mb-6">
+                <div key={course.id} className="bg-white rounded-xl shadow-lg p-8 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out border border-gray-100 hover:border-amber-200 flex flex-col">
+                  <div className="flex-1">
                     <div className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
                       {course.code}
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3">
                       {course.name}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-gray-600 leading-relaxed mb-6">
                       {course.description}
                     </p>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center text-gray-700">
-                      <Calendar className="w-5 h-5 text-amber-900 mr-3" />
-                      <span className="font-medium">{formatDays(course.days)}</span>
-                    </div>
-                    <div className="flex items-center text-gray-700">
-                      <Clock className="w-5 h-5 text-amber-900 mr-3" />
-                      <span className="font-medium">
-                        {formatTime(course.start_time)} - {formatTime(course.end_time)}
-                      </span>
-                    </div>
-                    <div className="flex items-center text-gray-700">
-                      <MapPin className="w-5 h-5 text-amber-900 mr-3" />
-                      <span className="font-medium">{course.location}</span>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center text-gray-700">
+                        <Calendar className="w-5 h-5 text-amber-900 mr-3" />
+                        <span className="font-medium">{formatDays(course.days)}</span>
+                      </div>
+                      <div className="flex items-center text-gray-700">
+                        <Clock className="w-5 h-5 text-amber-900 mr-3" />
+                        <span className="font-medium">
+                          {formatTime(course.start_time)} - {formatTime(course.end_time)}
+                        </span>
+                      </div>
+                      <div className="flex items-center text-gray-700">
+                        <MapPin className="w-5 h-5 text-amber-900 mr-3" />
+                        <span className="font-medium">{course.location}</span>
+                      </div>
                     </div>
                   </div>
 

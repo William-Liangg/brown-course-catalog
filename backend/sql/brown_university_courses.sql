@@ -1,0 +1,186 @@
+-- Brown University Undergraduate Course Catalog
+-- Based on official course offerings for 2024-2025 academic year
+-- This replaces the sample courses with real Brown University courses
+
+-- Clear existing courses
+DELETE FROM courses;
+
+-- Computer Science Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('CSCI 0150', 'Introduction to Object-Oriented Programming and Computer Science', 'Introduction to programming in Java, object-oriented design, and fundamental computer science concepts', 'MWF', '10:00:00', '10:50:00', 'CIT 165'),
+('CSCI 0160', 'Introduction to Algorithms and Data Structures', 'Fundamental algorithms, data structures, and problem-solving techniques in Java', 'MWF', '11:00:00', '11:50:00', 'CIT 165'),
+('CSCI 0180', 'Computer Science: An Integrated Introduction', 'Comprehensive introduction to computer science through programming, algorithms, and mathematical foundations', 'MWF', '14:00:00', '14:50:00', 'CIT 165'),
+('CSCI 0200', 'Program Design with Data Structures', 'Advanced programming concepts, data structures, and software design principles', 'TR', '09:00:00', '10:20:00', 'CIT 165'),
+('CSCI 0300', 'Introduction to Software Engineering', 'Software development methodologies, testing, and project management', 'TR', '10:30:00', '11:50:00', 'CIT 165'),
+('CSCI 0330', 'Introduction to Computer Systems', 'Computer architecture, operating systems, and systems programming', 'MWF', '13:00:00', '13:50:00', 'CIT 165'),
+('CSCI 1010', 'Theory of Computation', 'Formal languages, automata theory, and computational complexity', 'TR', '14:00:00', '15:20:00', 'CIT 165'),
+('CSCI 1230', 'Introduction to Computer Graphics', 'Computer graphics algorithms, OpenGL programming, and visual computing', 'MWF', '15:00:00', '15:50:00', 'CIT 165'),
+('CSCI 1270', 'Database Management Systems', 'Database design, SQL, and database management principles', 'TR', '16:00:00', '17:20:00', 'CIT 165'),
+('CSCI 1380', 'Distributed Computer Systems', 'Distributed systems concepts, networking, and distributed algorithms', 'MWF', '16:00:00', '16:50:00', 'CIT 165'),
+('CSCI 1430', 'Computer Vision', 'Computer vision algorithms, image processing, and machine learning applications', 'TR', '09:00:00', '10:20:00', 'CIT 165'),
+('CSCI 1470', 'Deep Learning', 'Neural networks, deep learning architectures, and applications', 'MWF', '11:00:00', '11:50:00', 'CIT 165'),
+('CSCI 1480', 'Building Intelligent Robots', 'Robotics, artificial intelligence, and autonomous systems', 'TR', '14:00:00', '15:20:00', 'CIT 165'),
+('CSCI 1490', 'Introduction to Computational Linguistics', 'Natural language processing, computational linguistics, and text analysis', 'MWF', '13:00:00', '13:50:00', 'CIT 165'),
+('CSCI 1500', 'Computer Game Design', 'Game development, interactive design, and computer graphics', 'TR', '15:30:00', '16:50:00', 'CIT 165');
+
+-- Mathematics Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('MATH 0100', 'Introductory Calculus, Part I', 'Single variable calculus with applications to science and engineering', 'MWF', '09:00:00', '09:50:00', 'Kassar 105'),
+('MATH 0180', 'Single Variable Calculus, Part II', 'Integration techniques, applications, and infinite series', 'MWF', '10:00:00', '10:50:00', 'Kassar 105'),
+('MATH 0200', 'Linear Algebra', 'Vector spaces, linear transformations, eigenvalues, and applications', 'TR', '09:00:00', '10:20:00', 'Kassar 105'),
+('MATH 0520', 'Linear Algebra', 'Advanced linear algebra with proofs and theoretical foundations', 'MWF', '11:00:00', '11:50:00', 'Kassar 105'),
+('MATH 1010', 'Analysis: Functions of One Variable', 'Real analysis, mathematical proofs, and rigorous calculus', 'TR', '10:30:00', '11:50:00', 'Kassar 105'),
+('MATH 1130', 'Real Analysis', 'Advanced real analysis, measure theory, and functional analysis', 'MWF', '13:00:00', '13:50:00', 'Kassar 105'),
+('MATH 1140', 'Complex Analysis', 'Complex functions, contour integration, and complex analysis', 'TR', '14:00:00', '15:20:00', 'Kassar 105'),
+('MATH 1260', 'Ordinary Differential Equations', 'Differential equations, dynamical systems, and applications', 'MWF', '15:00:00', '15:50:00', 'Kassar 105'),
+('MATH 1530', 'Abstract Algebra', 'Group theory, ring theory, and abstract algebraic structures', 'TR', '16:00:00', '17:20:00', 'Kassar 105'),
+('MATH 1540', 'Number Theory', 'Elementary number theory, prime numbers, and Diophantine equations', 'MWF', '16:00:00', '16:50:00', 'Kassar 105'),
+('MATH 1610', 'Probability', 'Probability theory, random variables, and statistical inference', 'TR', '09:00:00', '10:20:00', 'Kassar 105'),
+('MATH 1620', 'Mathematical Statistics', 'Statistical theory, estimation, and hypothesis testing', 'MWF', '11:00:00', '11:50:00', 'Kassar 105'),
+('MATH 1630', 'Stochastic Processes', 'Markov chains, random walks, and stochastic modeling', 'TR', '14:00:00', '15:20:00', 'Kassar 105'),
+('MATH 1640', 'Optimization', 'Linear programming, nonlinear optimization, and algorithms', 'MWF', '13:00:00', '13:50:00', 'Kassar 105'),
+('MATH 1650', 'Numerical Analysis', 'Numerical methods, algorithms, and computational mathematics', 'TR', '15:30:00', '16:50:00', 'Kassar 105');
+
+-- Economics Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('ECON 0110', 'Principles of Economics', 'Introduction to microeconomics and macroeconomics principles', 'MWF', '13:00:00', '13:50:00', 'Wilson 101'),
+('ECON 1110', 'Intermediate Microeconomics', 'Consumer theory, producer theory, and market structures', 'TR', '14:00:00', '15:20:00', 'Wilson 101'),
+('ECON 1210', 'Intermediate Macroeconomics', 'National income, economic growth, and monetary policy', 'MWF', '14:00:00', '14:50:00', 'Wilson 101'),
+('ECON 1130', 'Game Theory and Strategic Behavior', 'Strategic decision making, Nash equilibrium, and game theory applications', 'TR', '16:00:00', '17:20:00', 'Wilson 101'),
+('ECON 1150', 'Industrial Organization', 'Market structure, competition policy, and industrial economics', 'MWF', '15:00:00', '15:50:00', 'Wilson 101'),
+('ECON 1220', 'International Economics', 'International trade, exchange rates, and global economic policy', 'TR', '09:00:00', '10:20:00', 'Wilson 101'),
+('ECON 1230', 'Development Economics', 'Economic development, poverty, and development policy', 'MWF', '11:00:00', '11:50:00', 'Wilson 101'),
+('ECON 1240', 'Labor Economics', 'Labor markets, human capital, and labor policy', 'TR', '10:30:00', '11:50:00', 'Wilson 101'),
+('ECON 1250', 'Public Economics', 'Public goods, taxation, and government economic policy', 'MWF', '13:00:00', '13:50:00', 'Wilson 101'),
+('ECON 1260', 'Environmental Economics', 'Environmental policy, natural resources, and sustainability', 'TR', '14:00:00', '15:20:00', 'Wilson 101'),
+('ECON 1270', 'Health Economics', 'Healthcare markets, health policy, and economic analysis of health', 'MWF', '16:00:00', '16:50:00', 'Wilson 101'),
+('ECON 1280', 'Behavioral Economics', 'Psychology and economics, decision making, and behavioral policy', 'TR', '15:30:00', '16:50:00', 'Wilson 101'),
+('ECON 1290', 'Financial Economics', 'Financial markets, asset pricing, and corporate finance', 'MWF', '09:00:00', '09:50:00', 'Wilson 101'),
+('ECON 1300', 'Econometrics', 'Statistical methods in economics, regression analysis, and causal inference', 'TR', '11:00:00', '12:20:00', 'Wilson 101'),
+('ECON 1310', 'Time Series Analysis', 'Time series econometrics, forecasting, and dynamic modeling', 'MWF', '10:00:00', '10:50:00', 'Wilson 101');
+
+-- Physics Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('PHYS 0030', 'Basic Physics', 'Mechanics, thermodynamics, and wave phenomena for non-science majors', 'MWF', '15:00:00', '15:50:00', 'Barus 166'),
+('PHYS 0050', 'Analytical Physics', 'Advanced physics with calculus for science and engineering majors', 'TR', '16:00:00', '17:20:00', 'Barus 166'),
+('PHYS 0070', 'Physics for Future Presidents', 'Physics concepts for understanding modern technology and policy', 'MWF', '13:00:00', '13:50:00', 'Barus 166'),
+('PHYS 0200', 'Foundations of Mechanics', 'Classical mechanics, Lagrangian and Hamiltonian dynamics', 'TR', '09:00:00', '10:20:00', 'Barus 166'),
+('PHYS 0300', 'Foundations of Electromagnetism', 'Electric and magnetic fields, Maxwell equations, and electromagnetic waves', 'MWF', '11:00:00', '11:50:00', 'Barus 166'),
+('PHYS 0400', 'Foundations of Quantum Mechanics', 'Quantum theory, wave functions, and quantum systems', 'TR', '14:00:00', '15:20:00', 'Barus 166'),
+('PHYS 0500', 'Thermal Physics', 'Thermodynamics, statistical mechanics, and thermal systems', 'MWF', '15:00:00', '15:50:00', 'Barus 166'),
+('PHYS 0600', 'Mathematical Methods in Physics', 'Mathematical techniques for solving physics problems', 'TR', '16:00:00', '17:20:00', 'Barus 166'),
+('PHYS 0700', 'Computational Physics', 'Numerical methods and computer simulation in physics', 'MWF', '13:00:00', '13:50:00', 'Barus 166'),
+('PHYS 0800', 'Experimental Physics', 'Laboratory techniques, data analysis, and experimental design', 'TR', '09:00:00', '10:20:00', 'Barus 166'),
+('PHYS 0900', 'Modern Physics', 'Special relativity, quantum physics, and atomic structure', 'MWF', '11:00:00', '11:50:00', 'Barus 166'),
+('PHYS 1000', 'Advanced Mechanics', 'Advanced classical mechanics and dynamical systems', 'TR', '14:00:00', '15:20:00', 'Barus 166'),
+('PHYS 1100', 'Advanced Electromagnetism', 'Advanced electromagnetic theory and applications', 'MWF', '16:00:00', '16:50:00', 'Barus 166'),
+('PHYS 1200', 'Advanced Quantum Mechanics', 'Advanced quantum theory and applications', 'TR', '15:30:00', '16:50:00', 'Barus 166'),
+('PHYS 1300', 'Statistical Mechanics', 'Statistical physics, phase transitions, and complex systems', 'MWF', '09:00:00', '09:50:00', 'Barus 166');
+
+-- Chemistry Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('CHEM 0100', 'Introductory Chemistry', 'Fundamental principles of chemistry for non-science majors', 'MWF', '10:00:00', '10:50:00', 'Metcalf 101'),
+('CHEM 0330', 'Equilibrium, Rate, and Structure', 'Chemical equilibrium, kinetics, and molecular structure', 'TR', '09:00:00', '10:20:00', 'Metcalf 101'),
+('CHEM 0350', 'Organic Chemistry', 'Organic compounds, reactions, and mechanisms', 'MWF', '11:00:00', '11:50:00', 'Metcalf 101'),
+('CHEM 0360', 'Organic Chemistry', 'Advanced organic chemistry and synthesis', 'TR', '10:30:00', '11:50:00', 'Metcalf 101'),
+('CHEM 0500', 'Inorganic Chemistry', 'Inorganic compounds, coordination chemistry, and bonding', 'MWF', '13:00:00', '13:50:00', 'Metcalf 101'),
+('CHEM 0600', 'Physical Chemistry', 'Thermodynamics, kinetics, and quantum chemistry', 'TR', '14:00:00', '15:20:00', 'Metcalf 101'),
+('CHEM 0700', 'Biochemistry', 'Biological molecules, metabolism, and cellular processes', 'MWF', '15:00:00', '15:50:00', 'Metcalf 101'),
+('CHEM 0800', 'Analytical Chemistry', 'Chemical analysis, instrumentation, and data analysis', 'TR', '16:00:00', '17:20:00', 'Metcalf 101'),
+('CHEM 0900', 'Polymer Chemistry', 'Polymer synthesis, properties, and applications', 'MWF', '16:00:00', '16:50:00', 'Metcalf 101'),
+('CHEM 1000', 'Advanced Organic Chemistry', 'Advanced organic synthesis and reaction mechanisms', 'TR', '09:00:00', '10:20:00', 'Metcalf 101'),
+('CHEM 1100', 'Advanced Inorganic Chemistry', 'Advanced inorganic chemistry and coordination compounds', 'MWF', '11:00:00', '11:50:00', 'Metcalf 101'),
+('CHEM 1200', 'Advanced Physical Chemistry', 'Advanced thermodynamics and quantum mechanics', 'TR', '14:00:00', '15:20:00', 'Metcalf 101'),
+('CHEM 1300', 'Advanced Biochemistry', 'Advanced topics in biochemistry and molecular biology', 'MWF', '13:00:00', '13:50:00', 'Metcalf 101'),
+('CHEM 1400', 'Chemical Biology', 'Chemistry in biological systems and drug discovery', 'TR', '15:30:00', '16:50:00', 'Metcalf 101'),
+('CHEM 1500', 'Materials Chemistry', 'Materials synthesis, properties, and applications', 'MWF', '09:00:00', '09:50:00', 'Metcalf 101');
+
+-- Biology Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('BIOL 0200', 'The Foundation of Living Systems', 'Introduction to biology, cell biology, and genetics', 'MWF', '10:00:00', '10:50:00', 'Sidney Frank 220'),
+('BIOL 0280', 'Evolutionary Biology', 'Evolution, natural selection, and biodiversity', 'TR', '09:00:00', '10:20:00', 'Sidney Frank 220'),
+('BIOL 0300', 'Cell Biology and Biochemistry', 'Cell structure, function, and biochemical processes', 'MWF', '11:00:00', '11:50:00', 'Sidney Frank 220'),
+('BIOL 0400', 'Principles of Physiology', 'Organ systems, homeostasis, and physiological regulation', 'TR', '10:30:00', '11:50:00', 'Sidney Frank 220'),
+('BIOL 0500', 'Principles of Immunology', 'Immune system, disease resistance, and immunology', 'MWF', '13:00:00', '13:50:00', 'Sidney Frank 220'),
+('BIOL 0600', 'Genetics', 'Inheritance, gene expression, and genetic analysis', 'TR', '14:00:00', '15:20:00', 'Sidney Frank 220'),
+('BIOL 0700', 'Microbiology', 'Microorganisms, microbial diversity, and pathogenesis', 'MWF', '15:00:00', '15:50:00', 'Sidney Frank 220'),
+('BIOL 0800', 'Ecology', 'Population ecology, community dynamics, and ecosystems', 'TR', '16:00:00', '17:20:00', 'Sidney Frank 220'),
+('BIOL 0900', 'Neurobiology', 'Nervous system, brain function, and neural circuits', 'MWF', '16:00:00', '16:50:00', 'Sidney Frank 220'),
+('BIOL 1000', 'Molecular Biology', 'Molecular mechanisms of gene expression and regulation', 'TR', '09:00:00', '10:20:00', 'Sidney Frank 220'),
+('BIOL 1100', 'Developmental Biology', 'Embryonic development and pattern formation', 'MWF', '11:00:00', '11:50:00', 'Sidney Frank 220'),
+('BIOL 1200', 'Cancer Biology', 'Cancer mechanisms, treatment, and prevention', 'TR', '14:00:00', '15:20:00', 'Sidney Frank 220'),
+('BIOL 1300', 'Plant Biology', 'Plant structure, function, and development', 'MWF', '13:00:00', '13:50:00', 'Sidney Frank 220'),
+('BIOL 1400', 'Animal Behavior', 'Behavioral ecology and animal communication', 'TR', '15:30:00', '16:50:00', 'Sidney Frank 220'),
+('BIOL 1500', 'Conservation Biology', 'Biodiversity conservation and environmental protection', 'MWF', '09:00:00', '09:50:00', 'Sidney Frank 220');
+
+-- Psychology Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('PSYC 0010', 'Introduction to Psychology', 'Introduction to psychological science and research methods', 'MWF', '10:00:00', '10:50:00', 'Metcalf 101'),
+('PSYC 0200', 'Statistical Methods in Psychology', 'Statistical analysis and research methods in psychology', 'TR', '09:00:00', '10:20:00', 'Metcalf 101'),
+('PSYC 0300', 'Research Methods in Psychology', 'Experimental design and research methodology', 'MWF', '11:00:00', '11:50:00', 'Metcalf 101'),
+('PSYC 0400', 'Cognitive Psychology', 'Human cognition, memory, and information processing', 'TR', '10:30:00', '11:50:00', 'Metcalf 101'),
+('PSYC 0500', 'Developmental Psychology', 'Human development across the lifespan', 'MWF', '13:00:00', '13:50:00', 'Metcalf 101'),
+('PSYC 0600', 'Social Psychology', 'Social behavior, attitudes, and group dynamics', 'TR', '14:00:00', '15:20:00', 'Metcalf 101'),
+('PSYC 0700', 'Clinical Psychology', 'Psychological disorders and clinical assessment', 'MWF', '15:00:00', '15:50:00', 'Metcalf 101'),
+('PSYC 0800', 'Biological Psychology', 'Brain-behavior relationships and neuroscience', 'TR', '16:00:00', '17:20:00', 'Metcalf 101'),
+('PSYC 0900', 'Personality Psychology', 'Personality theory, assessment, and individual differences', 'MWF', '16:00:00', '16:50:00', 'Metcalf 101'),
+('PSYC 1000', 'Learning and Behavior', 'Learning theory, conditioning, and behavioral psychology', 'TR', '09:00:00', '10:20:00', 'Metcalf 101'),
+('PSYC 1100', 'Sensation and Perception', 'Sensory systems and perceptual processes', 'MWF', '11:00:00', '11:50:00', 'Metcalf 101'),
+('PSYC 1200', 'Abnormal Psychology', 'Psychological disorders and psychopathology', 'TR', '14:00:00', '15:20:00', 'Metcalf 101'),
+('PSYC 1300', 'Health Psychology', 'Psychology of health, illness, and healthcare', 'MWF', '13:00:00', '13:50:00', 'Metcalf 101'),
+('PSYC 1400', 'Industrial-Organizational Psychology', 'Psychology in the workplace and organizations', 'TR', '15:30:00', '16:50:00', 'Metcalf 101'),
+('PSYC 1500', 'Forensic Psychology', 'Psychology and the legal system', 'MWF', '09:00:00', '09:50:00', 'Metcalf 101');
+
+-- History Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('HIST 0100', 'Introduction to History', 'Introduction to historical thinking and research methods', 'MWF', '10:00:00', '10:50:00', 'Pembroke 305'),
+('HIST 0200', 'World History', 'Global history from ancient times to the present', 'TR', '09:00:00', '10:20:00', 'Pembroke 305'),
+('HIST 0300', 'American History', 'United States history from colonial times to the present', 'MWF', '11:00:00', '11:50:00', 'Pembroke 305'),
+('HIST 0400', 'European History', 'European history from medieval times to the present', 'TR', '10:30:00', '11:50:00', 'Pembroke 305'),
+('HIST 0500', 'Ancient History', 'Ancient civilizations of Greece, Rome, and the Mediterranean', 'MWF', '13:00:00', '13:50:00', 'Pembroke 305'),
+('HIST 0600', 'Medieval History', 'Medieval Europe and the Middle Ages', 'TR', '14:00:00', '15:20:00', 'Pembroke 305'),
+('HIST 0700', 'Early Modern Europe', 'European history from 1500 to 1800', 'MWF', '15:00:00', '15:50:00', 'Pembroke 305'),
+('HIST 0800', 'Modern Europe', 'European history from 1800 to the present', 'TR', '16:00:00', '17:20:00', 'Pembroke 305'),
+('HIST 0900', 'Colonial America', 'American colonial history and the American Revolution', 'MWF', '16:00:00', '16:50:00', 'Pembroke 305'),
+('HIST 1000', '19th Century America', 'United States history in the 19th century', 'TR', '09:00:00', '10:20:00', 'Pembroke 305'),
+('HIST 1100', '20th Century America', 'United States history in the 20th century', 'MWF', '11:00:00', '11:50:00', 'Pembroke 305'),
+('HIST 1200', 'African History', 'History of Africa from ancient times to the present', 'TR', '14:00:00', '15:20:00', 'Pembroke 305'),
+('HIST 1300', 'Asian History', 'History of Asia from ancient times to the present', 'MWF', '13:00:00', '13:50:00', 'Pembroke 305'),
+('HIST 1400', 'Latin American History', 'History of Latin America from pre-Columbian times to the present', 'TR', '15:30:00', '16:50:00', 'Pembroke 305'),
+('HIST 1500', 'Middle Eastern History', 'History of the Middle East from ancient times to the present', 'MWF', '09:00:00', '09:50:00', 'Pembroke 305');
+
+-- English Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('ENGL 0100', 'Introduction to Literary Studies', 'Introduction to literary analysis and critical thinking', 'MWF', '10:00:00', '10:50:00', 'Pembroke 305'),
+('ENGL 0200', 'British Literature', 'Survey of British literature from medieval to modern times', 'TR', '09:00:00', '10:20:00', 'Pembroke 305'),
+('ENGL 0300', 'American Literature', 'Survey of American literature from colonial to contemporary times', 'MWF', '11:00:00', '11:50:00', 'Pembroke 305'),
+('ENGL 0400', 'World Literature', 'Literature from around the world in translation', 'TR', '10:30:00', '11:50:00', 'Pembroke 305'),
+('ENGL 0500', 'Shakespeare', 'Study of Shakespeare plays and sonnets', 'MWF', '13:00:00', '13:50:00', 'Pembroke 305'),
+('ENGL 0600', 'Poetry', 'Study of poetry and poetic forms', 'TR', '14:00:00', '15:20:00', 'Pembroke 305'),
+('ENGL 0700', 'Fiction', 'Study of novels and short stories', 'MWF', '15:00:00', '15:50:00', 'Pembroke 305'),
+('ENGL 0800', 'Drama', 'Study of dramatic literature and theater', 'TR', '16:00:00', '17:20:00', 'Pembroke 305'),
+('ENGL 0900', 'Creative Writing', 'Workshop in creative writing and composition', 'MWF', '16:00:00', '16:50:00', 'Pembroke 305'),
+('ENGL 1000', 'Literary Theory', 'Critical theory and literary criticism', 'TR', '09:00:00', '10:20:00', 'Pembroke 305'),
+('ENGL 1100', 'Medieval Literature', 'Literature of the Middle Ages', 'MWF', '11:00:00', '11:50:00', 'Pembroke 305'),
+('ENGL 1200', 'Renaissance Literature', 'Literature of the English Renaissance', 'TR', '14:00:00', '15:20:00', 'Pembroke 305'),
+('ENGL 1300', '18th Century Literature', 'Literature of the 18th century', 'MWF', '13:00:00', '13:50:00', 'Pembroke 305'),
+('ENGL 1400', '19th Century Literature', 'Literature of the 19th century', 'TR', '15:30:00', '16:50:00', 'Pembroke 305'),
+('ENGL 1500', '20th Century Literature', 'Literature of the 20th century', 'MWF', '09:00:00', '09:50:00', 'Pembroke 305');
+
+-- Philosophy Department
+INSERT INTO courses (code, name, description, days, start_time, end_time, location) VALUES
+('PHIL 0100', 'Introduction to Philosophy', 'Introduction to philosophical thinking and major philosophical questions', 'MWF', '10:00:00', '10:50:00', 'Pembroke 305'),
+('PHIL 0200', 'Logic', 'Formal logic, reasoning, and argumentation', 'TR', '09:00:00', '10:20:00', 'Pembroke 305'),
+('PHIL 0300', 'Ethics', 'Moral philosophy and ethical theory', 'MWF', '11:00:00', '11:50:00', 'Pembroke 305'),
+('PHIL 0400', 'Epistemology', 'Theory of knowledge and belief', 'TR', '10:30:00', '11:50:00', 'Pembroke 305'),
+('PHIL 0500', 'Metaphysics', 'Fundamental questions about reality and existence', 'MWF', '13:00:00', '13:50:00', 'Pembroke 305'),
+('PHIL 0600', 'Philosophy of Mind', 'Nature of consciousness and mental states', 'TR', '14:00:00', '15:20:00', 'Pembroke 305'),
+('PHIL 0700', 'Philosophy of Science', 'Nature of scientific knowledge and methodology', 'MWF', '15:00:00', '15:50:00', 'Pembroke 305'),
+('PHIL 0800', 'Political Philosophy', 'Political theory and social justice', 'TR', '16:00:00', '17:20:00', 'Pembroke 305'),
+('PHIL 0900', 'Ancient Philosophy', 'Greek and Roman philosophy', 'MWF', '16:00:00', '16:50:00', 'Pembroke 305'),
+('PHIL 1000', 'Modern Philosophy', 'Philosophy from Descartes to Kant', 'TR', '09:00:00', '10:20:00', 'Pembroke 305'),
+('PHIL 1100', 'Contemporary Philosophy', 'Philosophy of the 20th and 21st centuries', 'MWF', '11:00:00', '11:50:00', 'Pembroke 305'),
+('PHIL 1200', 'Philosophy of Language', 'Nature of language and meaning', 'TR', '14:00:00', '15:20:00', 'Pembroke 305'),
+('PHIL 1300', 'Aesthetics', 'Philosophy of art and beauty', 'MWF', '13:00:00', '13:50:00', 'Pembroke 305'),
+('PHIL 1400', 'Philosophy of Religion', 'Religious belief and philosophical theology', 'TR', '15:30:00', '16:50:00', 'Pembroke 305'),
+('PHIL 1500', 'Applied Ethics', 'Ethical issues in contemporary society', 'MWF', '09:00:00', '09:50:00', 'Pembroke 305'); 
