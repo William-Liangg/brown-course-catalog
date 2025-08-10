@@ -101,6 +101,19 @@ const CoursesPage = ({ onNavigate }: Props) => {
     });
   };
 
+  // Helper function to convert abbreviated days to readable format
+  const formatDays = (days: string): string => {
+    const dayMap: { [key: string]: string } = {
+      'M': 'Mon',
+      'T': 'Tues', 
+      'W': 'Wed',
+      'R': 'Thur',
+      'F': 'Fri'
+    };
+    
+    return days.split('').map(day => dayMap[day] || day).join(', ');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       {/* Header Section */}
@@ -181,7 +194,7 @@ const CoursesPage = ({ onNavigate }: Props) => {
                   <div className="space-y-4">
                     <div className="flex items-center text-gray-700">
                       <Calendar className="w-5 h-5 text-amber-900 mr-3" />
-                      <span className="font-medium">{course.days}</span>
+                      <span className="font-medium">{formatDays(course.days)}</span>
                     </div>
                     <div className="flex items-center text-gray-700">
                       <Clock className="w-5 h-5 text-amber-900 mr-3" />
