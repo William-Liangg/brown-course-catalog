@@ -3,9 +3,10 @@ import { GraduationCap, Search, Calendar, Users } from "lucide-react"
 interface HomePageProps {
   onNavigate: (route: string) => void
   isLoggedIn: boolean
+  userFirstName?: string
 }
 
-const HomePage = ({ onNavigate, isLoggedIn }: HomePageProps) => {
+const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       {/* Hero Section */}
@@ -14,8 +15,17 @@ const HomePage = ({ onNavigate, isLoggedIn }: HomePageProps) => {
           <div className="mb-8">
             <GraduationCap className="w-16 h-16 text-amber-900 mx-auto mb-4" />
             <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Find Your Perfect
-              <span className="text-amber-900 block">Schedule @ Brown</span>
+              {isLoggedIn && userFirstName ? (
+                <>
+                  Welcome,
+                  <span className="text-amber-900 block">{userFirstName}!</span>
+                </>
+              ) : (
+                <>
+                  Find Your Perfect
+                  <span className="text-amber-900 block">Schedule @ Brown</span>
+                </>
+              )}
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
               Optimize your academic journey with our AI-assisted comprehensive course catalog for students at Brown. Make informed

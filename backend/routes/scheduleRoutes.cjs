@@ -1,17 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../models/db.cjs');
+const authMiddleware = require('../middleware/authMiddleware.cjs');
+
+// Apply authentication middleware to all schedule routes
+router.use(authMiddleware);
 
 // Get current user's schedule
 router.get('/', async (req, res) => {
   try {
-    // For demo purposes, get all schedules (in a real app, this would filter by user_id)
+    const userId = req.user.id;
     const result = await query(`
       SELECT s.id, s.term, c.* 
       FROM schedules s 
       JOIN courses c ON s.course_id = c.id 
+      WHERE s.user_id = $1
       ORDER BY c.days, c.start_time
-    `);
+    `, [userId]);
     
     res.json({ schedule: result.rows });
   } catch (error) {
@@ -24,6 +29,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { courseId, term } = req.body;
+    const userId = req.user.id;
 
     if (!courseId || !term) {
       return res.status(400).json({ error: 'Course ID and term are required' });
@@ -37,17 +43,17 @@ router.post('/', async (req, res) => {
 
     const course = courseResult.rows[0];
 
-    // Check if already in schedule (for demo, using user_id = 1)
+    // Check if already in schedule for this user
     const existingResult = await query(
       'SELECT * FROM schedules WHERE user_id = $1 AND course_id = $2 AND term = $3',
-      [1, courseId, term]
+      [userId, courseId, term]
     );
     
     if (existingResult.rows.length > 0) {
       return res.status(400).json({ error: 'Course already in schedule for this term' });
     }
 
-    // Check for time conflicts
+    // Check for time conflicts for this user
     const conflictsResult = await query(`
       SELECT c.* FROM schedules s 
       JOIN courses c ON s.course_id = c.id 
@@ -57,7 +63,7 @@ router.post('/', async (req, res) => {
         (c.start_time < $5 AND c.end_time >= $5) OR
         (c.start_time >= $4 AND c.end_time <= $5)
       )
-    `, [1, term, course.days, course.start_time, course.end_time]);
+    `, [userId, term, course.days, course.start_time, course.end_time]);
 
     if (conflictsResult.rows.length > 0) {
       return res.status(400).json({ 
@@ -66,10 +72,10 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Add to schedule (for demo, using user_id = 1)
+    // Add to schedule for this user
     const result = await query(
       'INSERT INTO schedules (user_id, course_id, term) VALUES ($1, $2, $3) RETURNING id',
-      [1, courseId, term]
+      [userId, courseId, term]
     );
 
     res.json({ 
@@ -86,11 +92,11 @@ router.post('/', async (req, res) => {
 router.delete('/:courseId', async (req, res) => {
   try {
     const { courseId } = req.params;
+    const userId = req.user.id;
 
-    // For demo, using user_id = 1
     const result = await query(
       'DELETE FROM schedules WHERE user_id = $1 AND course_id = $2 RETURNING id',
-      [1, courseId]
+      [userId, courseId]
     );
 
     if (result.rows.length === 0) {

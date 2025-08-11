@@ -71,6 +71,7 @@ const App = () => {
     return localStorage.getItem('currentRoute') || 'home';
   });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<{ id: number; email: string; firstName: string; lastName: string } | null>(null);
   const [conflictError, setConflictError] = useState<{
     message: string;
     conflicts: Array<{
@@ -84,7 +85,26 @@ const App = () => {
   const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   useEffect(() => {
-    setIsLoggedIn(!!localStorage.getItem('token'));
+    const token = localStorage.getItem('token');
+    const userEmail = localStorage.getItem('userEmail');
+    const userId = localStorage.getItem('userId');
+    const userFirstName = localStorage.getItem('userFirstName');
+    const userLastName = localStorage.getItem('userLastName');
+    
+    if (token && userEmail && userId && userFirstName && userLastName) {
+      setIsLoggedIn(true);
+      setUser({ 
+        id: parseInt(userId), 
+        email: userEmail, 
+        firstName: userFirstName, 
+        lastName: userLastName 
+      });
+    } else {
+      setIsLoggedIn(false);
+      setUser(null);
+      // Clear any cached schedule data when user logs out
+      setConflictError(null);
+    }
   }, [route]);
 
   // Save the current route to localStorage whenever it changes
@@ -93,9 +113,19 @@ const App = () => {
   }, [route]);
 
   const handleLogout = () => {
+    // Clear all authentication data
     localStorage.removeItem('token');
     localStorage.removeItem('userEmail');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('userFirstName');
+    localStorage.removeItem('userLastName');
+    
+    // Reset state
     setIsLoggedIn(false);
+    setUser(null);
+    setConflictError(null);
+    
+    // Navigate to home
     setRoute('home');
   };
 
@@ -114,9 +144,9 @@ const App = () => {
   if (route === 'login') content = <LoginPage onNavigate={handleNavigate} />;
   else if (route === 'signup') content = <SignupPage onNavigate={handleNavigate} />;
   else if (route === 'courses') content = <CoursesPage onNavigate={handleNavigate} conflictError={conflictError} setConflictError={setConflictError} isLoggedIn={isLoggedIn} />;
-  else if (route === 'schedule') content = <SchedulePage onNavigate={handleNavigate} />;
+  else if (route === 'schedule') content = <SchedulePage key={user?.id || 'no-user'} onNavigate={handleNavigate} />;
   else if (route === 'profile') content = <ProfilePage onNavigate={handleNavigate} onLogout={handleLogout} />;
-  else content = <HomePage onNavigate={handleNavigate} isLoggedIn={isLoggedIn} />;
+  else content = <HomePage onNavigate={handleNavigate} isLoggedIn={isLoggedIn} userFirstName={user?.firstName} />;
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -137,15 +167,25 @@ const App = () => {
                 You must sign in to save and manage your schedule.
               </p>
               
-              <button
-                onClick={() => {
-                  setShowAuthPopup(false);
-                  setRoute('login');
-                }}
-                className="w-full bg-amber-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200"
-              >
-                Go to Login
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={() => {
+                    setShowAuthPopup(false);
+                  }}
+                  className="flex-1 bg-gray-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-600 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowAuthPopup(false);
+                    setRoute('login');
+                  }}
+                  className="flex-1 bg-amber-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-amber-700 transition-colors duration-200"
+                >
+                  Go to Login
+                </button>
+              </div>
             </div>
           </div>
         </div>

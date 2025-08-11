@@ -21,10 +21,20 @@ const LoginPage = ({ onNavigate }: Props) => {
       const data = await res.json();
       console.log('Login response data:', data);
       if (!res.ok) throw new Error(data.error || 'Login failed');
+      
+      // Store authentication data
       localStorage.setItem('token', data.token);
       localStorage.setItem('userEmail', data.user.email);
+      localStorage.setItem('userId', data.user.id.toString());
+      localStorage.setItem('userFirstName', data.user.firstName);
+      localStorage.setItem('userLastName', data.user.lastName);
+      
       console.log('Stored token:', data.token);
       console.log('Stored userEmail:', data.user.email);
+      console.log('Stored userId:', data.user.id);
+      console.log('Stored firstName:', data.user.firstName);
+      console.log('Stored lastName:', data.user.lastName);
+      
       onNavigate('home');
     } catch (err: any) {
       setError(err.message);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Trash2, X, AlertTriangle, User } from 'lucide-react';
+import { getSchedule, removeFromSchedule } from './utils/api';
 
 interface ScheduledCourse {
   id: number;
@@ -66,33 +67,40 @@ const SchedulePage = ({ onNavigate }: Props) => {
   const fetchSchedule = async () => {
     try {
       setLoading(true);
-      // For demo purposes, fetch schedule without authentication
-      const res = await fetch('/api/schedule');
+      setError('');
       
-      if (!res.ok) {
-        throw new Error('Failed to fetch schedule');
+      // Check if user is logged in
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+      
+      if (!token || !userId) {
+        setError('Please log in to view your schedule');
+        setSchedule([]);
+        setLoading(false);
+        return;
       }
       
-      const data = await res.json();
+      const data = await getSchedule();
       setSchedule(data.schedule);
     } catch (err: any) {
-      setError(err.message);
+      if (err.message.includes('401') || err.message.includes('No token provided')) {
+        setError('Please log in to view your schedule');
+        setSchedule([]);
+        // Redirect to login if not authenticated
+        setTimeout(() => onNavigate('login'), 2000);
+      } else {
+        setError(err.message || 'Failed to fetch schedule');
+        setSchedule([]);
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const removeFromSchedule = async (courseId: number) => {
+  const removeFromScheduleHandler = async (courseId: number) => {
     try {
-      // For demo purposes, remove course without authentication
-      const res = await fetch(`/api/schedule/${courseId}`, {
-        method: 'DELETE'
-      });
-
-      if (!res.ok) {
-        throw new Error('Failed to remove course');
-      }
-
+      await removeFromSchedule(courseId);
+      
       // Refresh schedule
       fetchSchedule();
       // Close modal if the removed course was selected
@@ -101,7 +109,12 @@ const SchedulePage = ({ onNavigate }: Props) => {
         setSelectedCourse(null);
       }
     } catch (err: any) {
-      setError(err.message);
+      if (err.message.includes('401') || err.message.includes('No token provided')) {
+        setError('Please log in to manage your schedule');
+        setTimeout(() => onNavigate('login'), 2000);
+      } else {
+        setError(err.message || 'Failed to remove course');
+      }
     }
   };
 
@@ -137,8 +150,46 @@ const SchedulePage = ({ onNavigate }: Props) => {
     setConflictInfo(null);
   };
 
+  // Clear schedule when user changes
   useEffect(() => {
-    fetchSchedule();
+    const currentUserId = localStorage.getItem('userId');
+    if (currentUserId) {
+      fetchSchedule();
+    } else {
+      // Clear schedule if no user is logged in
+      setSchedule([]);
+      setLoading(false);
+    }
+
+    // Listen for storage changes (when user logs in/out in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userId' || e.key === 'token') {
+        const newUserId = localStorage.getItem('userId');
+        if (newUserId) {
+          fetchSchedule();
+        } else {
+          setSchedule([]);
+          setSelectedCourse(null);
+          setShowModal(false);
+          setShowConflictModal(false);
+          setConflictInfo(null);
+          setError('');
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // Cleanup function to clear state when component unmounts or user changes
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      setSchedule([]);
+      setSelectedCourse(null);
+      setShowModal(false);
+      setShowConflictModal(false);
+      setConflictInfo(null);
+      setError('');
+    };
   }, []);
 
   const formatTime = (time: string) => {
@@ -355,7 +406,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                removeFromSchedule(course.id);
+                                removeFromScheduleHandler(course.id);
                               }}
                               className="text-xs text-red-600 hover:text-red-800 flex items-center"
                             >
@@ -475,7 +526,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
               {/* Action Buttons */}
               <div className="flex gap-4">
                 <button
-                  onClick={() => removeFromSchedule(selectedCourse.id)}
+                  onClick={() => removeFromScheduleHandler(selectedCourse.id)}
                   className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
@@ -548,7 +599,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
               {/* Action Buttons */}
               <div className="flex gap-4">
                 <button
-                  onClick={() => removeFromSchedule(conflictInfo.course.id)}
+                  onClick={() => removeFromScheduleHandler(conflictInfo.course.id)}
                   className="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
