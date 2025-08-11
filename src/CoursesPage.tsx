@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, BookOpen, Clock, MapPin, Calendar, Plus, AlertTriangle, CheckCircle, User } from "lucide-react";
+import { getCourses, addToSchedule } from './utils/api';
 
 interface Course {
   id: number;
@@ -52,21 +53,16 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
   const fetchCourses = async (searchQuery?: string) => {
     try {
       setLoading(true);
-      const url = searchQuery 
-        ? `/api/courses?search=${encodeURIComponent(searchQuery)}`
-        : '/api/courses';
-      const res = await fetch(url);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to fetch courses');
+      const data = await getCourses(searchQuery);
       setCourses(data.courses);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || 'Failed to fetch courses');
     } finally {
       setLoading(false);
     }
   };
 
-  const addToSchedule = async (courseId: number) => {
+  const addToScheduleHandler = async (courseId: number) => {
     // Check if user is logged in
     if (!isLoggedIn) {
       setAddError('You must sign in to add courses to your schedule');
@@ -79,42 +75,32 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
       setAddError('');
       setConflictError(null);
       
-      // For demo purposes, make request without authentication
-      const res = await fetch('/api/schedule', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          courseId,
-          term: selectedTerm
-        })
-      });
-
-      const data = await res.json();
-      console.log('Response status:', res.status);
+      const data = await addToSchedule(courseId, selectedTerm);
       console.log('Response data:', data);
       
-      if (!res.ok) {
-        if (res.status === 400 && data.error === 'Time conflict detected') {
-          console.log('Setting conflict error:', data);
-          setConflictError({
-            message: 'This course cannot be added because it conflicts with courses already in your schedule',
-            conflicts: data.conflicts || []
-          });
-          return;
-        }
-        throw new Error(data.error || 'Failed to add course to schedule');
-      }
-
-      // Show success message
-      setSuccessMessage('Course added to schedule successfully!');
       setShowSuccess(true);
-      // Auto-hide after 3 seconds
+      setSuccessMessage('Course added to schedule successfully!');
       setTimeout(() => setShowSuccess(false), 3000);
+      
     } catch (err: any) {
-      console.error('Error in addToSchedule:', err);
-      setAddError(err.message);
+      console.log('Error adding course:', err);
+      
+      if (err.message.includes('Time conflict detected')) {
+        // Check if conflicts data is available in the error response
+        if (err.conflicts && Array.isArray(err.conflicts)) {
+          setConflictError({
+            message: 'Time conflict detected',
+            conflicts: err.conflicts
+          });
+        } else {
+          setAddError('Time conflict detected with existing courses');
+        }
+      } else if (err.message.includes('401') || err.message.includes('No token provided')) {
+        setAddError('Please log in to add courses to your schedule');
+        setTimeout(() => onNavigate('login'), 2000);
+      } else {
+        setAddError(err.message || 'Failed to add course to schedule');
+      }
     } finally {
       setAddingCourse(null);
     }
@@ -228,12 +214,24 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
               <div className="bg-white rounded-xl shadow-2xl max-w-md mx-4 transform transition-all duration-300 animate-scaleIn">
                 <div className="p-6">
                   <div className="flex items-center mb-4">
-                    <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
-                    <h3 className="text-xl font-semibold text-gray-900">Error Adding Course</h3>
+                    {addError === 'You must sign in to add courses to your schedule' ? (
+                      <>
+                        <div className="w-6 h-6 text-amber-600 mr-3">🔒</div>
+                        <h3 className="text-xl font-semibold text-gray-900">Authentication Required</h3>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+                        <h3 className="text-xl font-semibold text-gray-900">Error Adding Course</h3>
+                      </>
+                    )}
                   </div>
                   
                   <p className="text-gray-700 mb-6 text-center">
-                    {addError}
+                    {addError === 'You must sign in to add courses to your schedule' 
+                      ? 'You must sign in to save and manage your schedule.'
+                      : addError
+                    }
                   </p>
                   
                   <div className="flex gap-3">
@@ -302,13 +300,17 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                   <div className="bg-gray-50 p-4 rounded-lg mb-6">
                     <div className="font-semibold text-gray-800 mb-2 flex items-center">
                       <Clock className="w-4 h-4 mr-2" />
-                      Conflicting Course:
+                      {conflictError.conflicts.length === 1 ? 'Conflicting Course:' : 'Conflicting Courses:'}
                     </div>
-                    <div className="text-sm text-gray-700">
-                      <div className="font-medium">{conflictError.conflicts[0].code} - {conflictError.conflicts[0].name}</div>
-                      <div className="text-gray-600">
-                        {formatDays(conflictError.conflicts[0].days)} • {formatTime(conflictError.conflicts[0].start_time)} - {formatTime(conflictError.conflicts[0].end_time)}
-                      </div>
+                    <div className="space-y-3">
+                      {conflictError.conflicts.map((conflict, index) => (
+                        <div key={index} className="text-sm text-gray-700 border-l-2 border-red-300 pl-3">
+                          <div className="font-medium">{conflict.code} - {conflict.name}</div>
+                          <div className="text-gray-600">
+                            {formatDays(conflict.days)} • {formatTime(conflict.start_time)} - {formatTime(conflict.end_time)}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                   
@@ -377,7 +379,7 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                       </select>
                     </div>
                     <button 
-                      onClick={() => addToSchedule(course.id)}
+                      onClick={() => addToScheduleHandler(course.id)}
                       disabled={addingCourse === course.id}
                       className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
                         isLoggedIn 

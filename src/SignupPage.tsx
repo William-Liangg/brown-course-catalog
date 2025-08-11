@@ -7,6 +7,8 @@ interface Props {
 const SignupPage = ({ onNavigate }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -16,15 +18,25 @@ const SignupPage = ({ onNavigate }: Props) => {
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, firstName, lastName }),
       });
       const data = await res.json();
       console.log('Signup response data:', data);
       if (!res.ok) throw new Error(data.error || 'Signup failed');
+      
+      // Store authentication data
       localStorage.setItem('token', data.token);
       localStorage.setItem('userEmail', data.user.email);
+      localStorage.setItem('userId', data.user.id.toString());
+      localStorage.setItem('userFirstName', data.user.firstName);
+      localStorage.setItem('userLastName', data.user.lastName);
+      
       console.log('Stored token:', data.token);
       console.log('Stored userEmail:', data.user.email);
+      console.log('Stored userId:', data.user.id);
+      console.log('Stored firstName:', data.user.firstName);
+      console.log('Stored lastName:', data.user.lastName);
+      
       onNavigate('home');
     } catch (err: any) {
       setError(err.message);
@@ -43,11 +55,31 @@ const SignupPage = ({ onNavigate }: Props) => {
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <input
+                type="text"
+                placeholder="First name"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm"
+                required
+              />
+            </div>
+            <div>
+              <input
+                type="text"
+                placeholder="Last name"
+                value={lastName}
+                onChange={e => setLastName(e.target.value)}
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm"
+                required
+              />
+            </div>
+            <div>
+              <input
                 type="email"
                 placeholder="Email address"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm"
                 required
               />
             </div>
@@ -76,7 +108,7 @@ const SignupPage = ({ onNavigate }: Props) => {
             </button>
           </div>
 
-                    <div className="text-center space-y-2">
+          <div className="text-center space-y-2">
             <div>
               <span className="text-gray-600">Already have an account? </span>
               <button 
