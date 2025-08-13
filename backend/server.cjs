@@ -3,6 +3,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes.cjs');
 const courseRoutes = require('./routes/courseRoutes.cjs');
 const scheduleRoutes = require('./routes/scheduleRoutes.cjs');
+const aiRoutes = require('./routes/aiRoutes.cjs');
 require('dotenv').config();
 
 // Initialize Express app
@@ -14,6 +15,7 @@ app.use(express.json());
 app.use('/api', authRoutes);
 app.use('/api', courseRoutes);
 app.use('/api/schedule', scheduleRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'API running' });

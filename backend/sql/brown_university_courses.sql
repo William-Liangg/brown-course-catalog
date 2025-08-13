@@ -5,6 +5,12 @@
 -- Clear existing courses
 DELETE FROM courses;
 
+INSERT INTO courses (code, name, description, days, start_time, end_time, location, professor) VALUES
+('AFRI 0090', 'An Introduction to Africana Studies', 'Introduction to Africana Studies, exploring the history, theories, and cultural practices of African-descended peoples across the diaspora', 'TR', '13:00:00', '14:20:00', 'Salomon Center 003', 'Prof. Francoise Hamlin'),
+('AFRI 0300', 'Performing Ethnography and the Politics of Culture', 'Introduction to ethnographic fieldwork focusing on Black cultural communities in Providence.', 'M', '15:00:00', '17:30:00', 'Churchill House 008', 'Prof. Lisa Biggs'),
+('AFRI 0410', 'After the Uprisings: Abolition and Black Studies', 'A discussion-based seminar exploring the concept of abolition in Black Studies, its varied interpretations, and the theoretical and practical challenges in envisioning pathways to an abolitionist future.
+', 'T', '16:00:00', '18:30:00', 'Churchill House 008', 'Prof. Justin Lang');
+
 -- Computer Science Department
 INSERT INTO courses (code, name, description, days, start_time, end_time, location, professor) VALUES
 ('CSCI 0150', 'Introduction to Object-Oriented Programming and Computer Science', 'Introduction to programming in Java, object-oriented design, and fundamental computer science concepts', 'MWF', '10:00:00', '10:50:00', 'CIT 165', 'Prof. Sarah Chen'),
@@ -183,4 +189,5 @@ INSERT INTO courses (code, name, description, days, start_time, end_time, locati
 ('PHIL 1200', 'Philosophy of Language', 'Nature of language and meaning', 'TR', '14:00:00', '15:20:00', 'Pembroke 305', 'Prof. Cosmos Lee'),
 ('PHIL 1300', 'Aesthetics', 'Philosophy of art and beauty', 'MWF', '13:00:00', '13:50:00', 'Pembroke 305', 'Prof. Universe Martinez'),
 ('PHIL 1400', 'Philosophy of Religion', 'Religious belief and philosophical theology', 'TR', '15:30:00', '16:50:00', 'Pembroke 305', 'Prof. Infinity Clark'),
-('PHIL 1500', 'Applied Ethics', 'Ethical issues in contemporary society', 'MWF', '09:00:00', '09:50:00', 'Pembroke 305', 'Prof. Eternity White'); 
+('PHIL 1500', 'Applied Ethics', 'Ethical issues in contemporary society', 'MWF', '09:00:00', '09:50:00', 'Pembroke 305', 'Prof. Eternity White');
+
