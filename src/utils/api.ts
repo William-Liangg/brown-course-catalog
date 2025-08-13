@@ -42,7 +42,13 @@ export const addToSchedule = (courseId: number, term: string) =>
 export const removeFromSchedule = (courseId: number) => 
   apiCall(`/schedule/${courseId}`, { method: 'DELETE' });
 export const getCourses = (search?: string) => 
-  apiCall(search ? `/courses?search=${encodeURIComponent(search)}` : '/courses'); 
+  apiCall(search ? `/courses?search=${encodeURIComponent(search)}` : '/courses');
+
+export const getCourseRecommendations = (interests: string) => 
+  apiCall('/ai/recommend', {
+    method: 'POST',
+    body: JSON.stringify({ interests }),
+  });
 
 export const updateNames = async (firstName: string, lastName: string) => {
   return apiCall('/update-names', {

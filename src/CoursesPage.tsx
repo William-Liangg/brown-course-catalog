@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, BookOpen, Clock, MapPin, Calendar, Plus, AlertTriangle, CheckCircle, User } from "lucide-react";
 import { getCourses, addToSchedule } from './utils/api';
+import CourseChatbot from './components/CourseChatbot';
 
 interface Course {
   id: number;
@@ -435,6 +436,9 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
           </button>
         </div>
       </section>
+
+      {/* AI Course Chatbot */}
+      <CourseChatbot />
     </div>
   );
 };
