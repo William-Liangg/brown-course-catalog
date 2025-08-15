@@ -12,7 +12,7 @@ interface NavbarProps {
   onLogout: () => void;
 }
 
-const Navbar = ({ onNavigate, isLoggedIn, onLogout }: NavbarProps) => {
+const Navbar = ({ onNavigate, isLoggedIn }: NavbarProps) => {
   return (
     <nav className="bg-amber-900 text-white p-5 shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center">

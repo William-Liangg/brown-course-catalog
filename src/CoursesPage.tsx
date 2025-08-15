@@ -369,6 +369,14 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                         {formatTime(course.start_time)} - {formatTime(course.end_time)}
                       </span>
                     </div>
+                    <div className="flex items-center text-gray-700">
+                      <MapPin className="w-4 h-4 text-amber-900 mr-2" />
+                      <span className="font-medium text-sm">{course.location || 'TBA'}</span>
+                    </div>
+                    <div className="flex items-center text-gray-700">
+                      <User className="w-4 h-4 text-amber-900 mr-2" />
+                      <span className="font-medium text-sm">{course.professor || 'TBA'}</span>
+                    </div>
                   </div>
                 </div>
               ))}
