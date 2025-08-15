@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Lock, Eye, EyeOff, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, Edit, AlertTriangle } from 'lucide-react';
 import { deleteAccount } from './utils/api';
 
 interface Props {
