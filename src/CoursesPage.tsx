@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, BookOpen, Clock, MapPin, Calendar, Plus, AlertTriangle, CheckCircle, User } from "lucide-react";
+import { Search, BookOpen, Clock, MapPin, Calendar, Plus, AlertTriangle, CheckCircle, User, X } from "lucide-react";
 import { getCourses, addToSchedule } from './utils/api';
 import CourseChatbot from './components/CourseChatbot';
 
@@ -50,6 +50,8 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
   const [addError, setAddError] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [showCourseModal, setShowCourseModal] = useState(false);
 
   const fetchCourses = async (searchQuery?: string) => {
     try {
@@ -119,6 +121,16 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchCourses(search);
+  };
+
+  const openCourseModal = (course: Course) => {
+    setSelectedCourse(course);
+    setShowCourseModal(true);
+  };
+
+  const closeCourseModal = () => {
+    setShowCourseModal(false);
+    setSelectedCourse(null);
   };
 
   const formatTime = (time: string) => {
@@ -334,77 +346,29 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {courses.map((course) => (
-                <div key={course.id} className="bg-white rounded-xl shadow-lg p-8 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out border border-gray-100 hover:border-amber-200 flex flex-col">
-                  <div className="flex-1">
-                    <div className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
-                      {course.code}
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-3">
-                      {course.name}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed mb-6">
-                      {course.description}
-                    </p>
-                    
-                    <div className="space-y-4">
-                      <div className="flex items-center text-gray-700">
-                        <Calendar className="w-5 h-5 text-amber-900 mr-3" />
-                        <span className="font-medium">{formatDays(course.days)}</span>
-                      </div>
-                      <div className="flex items-center text-gray-700">
-                        <Clock className="w-5 h-5 text-amber-900 mr-3" />
-                        <span className="font-medium">
-                          {formatTime(course.start_time)} - {formatTime(course.end_time)}
-                        </span>
-                      </div>
-                      <div className="flex items-center text-gray-700">
-                        <User className="w-5 h-5 text-amber-900 mr-3" />
-                        <span className="font-medium">{course.professor || 'TBA'}</span>
-                      </div>
-                      <div className="flex items-center text-gray-700">
-                        <MapPin className="w-5 h-5 text-amber-900 mr-3" />
-                        <span className="font-medium">{course.location || 'TBA'}</span>
-                      </div>
-                    </div>
+                <div 
+                  key={course.id} 
+                  onClick={() => openCourseModal(course)}
+                  className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out border border-gray-100 hover:border-amber-200 cursor-pointer"
+                >
+                  <div className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
+                    {course.code}
                   </div>
-
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <div className="mb-4">
-                      <select
-                        value={selectedTerm}
-                        onChange={(e) => setSelectedTerm(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
-                      >
-                        <option value="Fall 2025">Fall 2025</option>
-                        <option value="Spring 2025">Spring 2025</option>
-                      </select>
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">
+                    {course.name}
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center text-gray-700">
+                      <Calendar className="w-4 h-4 text-amber-900 mr-2" />
+                      <span className="font-medium text-sm">{formatDays(course.days)}</span>
                     </div>
-                    <button 
-                      onClick={() => addToScheduleHandler(course.id)}
-                      disabled={addingCourse === course.id}
-                      className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
-                        isLoggedIn 
-                          ? 'bg-amber-900 text-white hover:bg-amber-800' 
-                          : 'bg-gray-400 text-gray-600 hover:bg-gray-500'
-                      }`}
-                    >
-                      {addingCourse === course.id ? (
-                        <>
-                          <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Adding...
-                        </>
-                      ) : !isLoggedIn ? (
-                        <>
-                          <div className="w-4 h-4 mr-2">🔒</div>
-                          Sign in to Add
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add to Schedule
-                        </>
-                      )}
-                    </button>
+                    <div className="flex items-center text-gray-700">
+                      <Clock className="w-4 h-4 text-amber-900 mr-2" />
+                      <span className="font-medium text-sm">
+                        {formatTime(course.start_time)} - {formatTime(course.end_time)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -436,6 +400,121 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
           </button>
         </div>
       </section>
+
+      {/* Course Details Modal */}
+      {showCourseModal && selectedCourse && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 animate-fadeIn">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              {/* Modal Header */}
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <div className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
+                    {selectedCourse.code}
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    {selectedCourse.name}
+                  </h2>
+                </div>
+                <button
+                  onClick={closeCourseModal}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Course Description */}
+              <div className="mb-6">
+                <p className="text-gray-600 leading-relaxed text-lg">
+                  {selectedCourse.description}
+                </p>
+              </div>
+
+              {/* Course Details */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div className="space-y-4">
+                  <div className="flex items-center text-gray-700">
+                    <Calendar className="w-5 h-5 text-amber-900 mr-3" />
+                    <div>
+                      <span className="font-semibold">Meeting Days:</span>
+                      <span className="ml-2">{formatDays(selectedCourse.days)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <Clock className="w-5 h-5 text-amber-900 mr-3" />
+                    <div>
+                      <span className="font-semibold">Time:</span>
+                      <span className="ml-2">
+                        {formatTime(selectedCourse.start_time)} - {formatTime(selectedCourse.end_time)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center text-gray-700">
+                    <User className="w-5 h-5 text-amber-900 mr-3" />
+                    <div>
+                      <span className="font-semibold">Professor:</span>
+                      <span className="ml-2">{selectedCourse.professor || 'TBA'}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-gray-700">
+                    <MapPin className="w-5 h-5 text-amber-900 mr-3" />
+                    <div>
+                      <span className="font-semibold">Location:</span>
+                      <span className="ml-2">{selectedCourse.location || 'TBA'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Add to Schedule Section */}
+              <div className="border-t border-gray-200 pt-6">
+                <div className="mb-4">
+                  <select
+                    value={selectedTerm}
+                    onChange={(e) => setSelectedTerm(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                  >
+                    <option value="Fall 2025">Fall 2025</option>
+                    <option value="Spring 2025">Spring 2025</option>
+                  </select>
+                </div>
+                <button 
+                  onClick={() => {
+                    addToScheduleHandler(selectedCourse.id);
+                    closeCourseModal();
+                  }}
+                  disabled={addingCourse === selectedCourse.id}
+                  className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
+                    isLoggedIn 
+                      ? 'bg-amber-900 text-white hover:bg-amber-800' 
+                      : 'bg-gray-400 text-gray-600 hover:bg-gray-500'
+                  }`}
+                >
+                  {addingCourse === selectedCourse.id ? (
+                    <>
+                      <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Adding...
+                    </>
+                  ) : !isLoggedIn ? (
+                    <>
+                      <div className="w-4 h-4 mr-2">🔒</div>
+                      Sign in to Add
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add to Schedule
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Course Chatbot */}
       <CourseChatbot />
