@@ -8,11 +8,11 @@ interface Course {
   code: string;
   name: string;
   description: string;
-  days: string;
-  start_time: string;
-  end_time: string;
-  location: string;
-  professor: string;
+  days: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+  professor: string | null;
 }
 
 interface Props {
@@ -52,6 +52,8 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
   const [successMessage, setSuccessMessage] = useState('');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [showCourseModal, setShowCourseModal] = useState(false);
+  const [showTbaPopup, setShowTbaPopup] = useState(false);
+  const [tbaPopupMessage, setTbaPopupMessage] = useState('');
 
   const fetchCourses = async (searchQuery?: string) => {
     try {
@@ -69,6 +71,39 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
     // Check if user is logged in
     if (!isLoggedIn) {
       setAddError('You must sign in to add courses to your schedule');
+      return;
+    }
+
+    // Find the course to check for TBA/TBD attributes
+    const course = courses.find(c => c.id === courseId);
+    if (!course) {
+      setAddError('Course not found');
+      return;
+    }
+
+    // Check for TBA/TBD attributes
+    const tbaAttributes = [];
+    if (!course.days || course.days === 'TBA' || course.days === 'TBD') {
+      tbaAttributes.push('Days');
+    }
+    if (!course.start_time || course.start_time === 'TBA' || course.start_time === 'TBD') {
+      tbaAttributes.push('Start Time');
+    }
+    if (!course.end_time || course.end_time === 'TBA' || course.end_time === 'TBD') {
+      tbaAttributes.push('End Time');
+    }
+    if (!course.location || course.location === 'TBA' || course.location === 'TBD') {
+      tbaAttributes.push('Location');
+    }
+    if (!course.professor || course.professor === 'TBA' || course.professor === 'TBD') {
+      tbaAttributes.push('Professor');
+    }
+
+    // If any TBA/TBD attributes found, show popup and prevent adding
+    if (tbaAttributes.length > 0) {
+      const message = `Cannot add course to schedule. The following information is not yet available: ${tbaAttributes.join(', ')}.`;
+      setTbaPopupMessage(message);
+      setShowTbaPopup(true);
       return;
     }
 
@@ -133,25 +168,51 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
     setSelectedCourse(null);
   };
 
-  const formatTime = (time: string) => {
-    return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+  const formatTime = (time: string | null) => {
+    if (!time) return 'TBA';
+    try {
+      return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      return 'TBA';
+    }
   };
 
   // Helper function to convert abbreviated days to readable format
-  const formatDays = (days: string): string => {
-    const dayMap: { [key: string]: string } = {
-      'M': 'Mon',
-      'T': 'Tues', 
-      'W': 'Wed',
-      'R': 'Thur',
-      'F': 'Fri'
-    };
+  const formatDays = (days: string | null): string => {
+    if (!days) return 'TBA';
     
-    return days.split('').map(day => dayMap[day] || day).join(', ');
+    // Handle day combinations first (before single letters)
+    let result = days;
+    
+    // Replace common day combinations
+    result = result.replace(/TTh/g, 'Tues, Thur');
+    result = result.replace(/MWF/g, 'Mon, Wed, Fri');
+    result = result.replace(/MW/g, 'Mon, Wed');
+    result = result.replace(/WF/g, 'Wed, Fri');
+    result = result.replace(/MT/g, 'Mon, Tues');
+    result = result.replace(/TF/g, 'Tues, Fri');
+    
+    // Then handle remaining single days (only if not already processed)
+    result = result.replace(/\bM\b/g, 'Mon');
+    result = result.replace(/\bT\b/g, 'Tues');
+    result = result.replace(/\bW\b/g, 'Wed');
+    result = result.replace(/\bTh\b/g, 'Thur');
+    result = result.replace(/\bF\b/g, 'Fri');
+    
+    return result;
+  };
+
+  // Helper function to check if a course has TBA/TBD attributes
+  const hasTbaAttributes = (course: Course): boolean => {
+    return !course.days || course.days === 'TBA' || course.days === 'TBD' ||
+           !course.start_time || course.start_time === 'TBA' || course.start_time === 'TBD' ||
+           !course.end_time || course.end_time === 'TBA' || course.end_time === 'TBD' ||
+           !course.location || course.location === 'TBA' || course.location === 'TBD' ||
+           !course.professor || course.professor === 'TBA' || course.professor === 'TBD';
   };
 
   return (
@@ -338,6 +399,31 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
             </div>
           )}
 
+          {/* TBA/TBD Error Modal */}
+          {showTbaPopup && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fadeIn">
+              <div className="bg-white rounded-xl shadow-2xl max-w-md mx-4 transform transition-all duration-300 animate-scaleIn">
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <AlertTriangle className="w-6 h-6 text-orange-600 mr-3" />
+                    <h3 className="text-xl font-semibold text-gray-900">Course Information Not Available</h3>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6 text-center">
+                    {tbaPopupMessage}
+                  </p>
+                  
+                  <button
+                    onClick={() => setShowTbaPopup(false)}
+                    className="w-full bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 transition-colors duration-200"
+                  >
+                    OK, I Understand
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {loading ? (
             <div className="text-center py-16">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-900 mb-4"></div>
@@ -349,10 +435,22 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                 <div 
                   key={course.id} 
                   onClick={() => openCourseModal(course)}
-                  className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out border border-gray-100 hover:border-amber-200 cursor-pointer"
+                  className={`bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl hover:scale-105 hover:-translate-y-2 transition-all duration-300 ease-in-out border cursor-pointer ${
+                    hasTbaAttributes(course) 
+                      ? 'border-orange-200 hover:border-orange-300' 
+                      : 'border-gray-100 hover:border-amber-200'
+                  }`}
                 >
-                  <div className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold inline-block mb-3">
-                    {course.code}
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="bg-amber-100 text-amber-900 px-3 py-1 rounded-full text-sm font-semibold inline-block">
+                      {course.code}
+                    </div>
+                    {hasTbaAttributes(course) && (
+                      <div className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-medium flex items-center">
+                        <AlertTriangle className="w-3 h-3 mr-1" />
+                        TBA
+                      </div>
+                    )}
                   </div>
                   <h3 className="text-xl font-bold text-gray-900 mb-4">
                     {course.name}
@@ -477,6 +575,21 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                 </div>
               </div>
 
+              {/* TBA/TBD Warning */}
+              {hasTbaAttributes(selectedCourse) && (
+                <div className="border-t border-gray-200 pt-6 mb-4">
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div className="flex items-center mb-2">
+                      <AlertTriangle className="w-5 h-5 text-orange-600 mr-2" />
+                      <span className="font-semibold text-orange-800">Course Information Not Available</span>
+                    </div>
+                    <p className="text-orange-700 text-sm">
+                      This course cannot be added to your schedule because some information (days, times, location, or professor) is not yet available.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Add to Schedule Section */}
               <div className="border-t border-gray-200 pt-6">
                 <div className="mb-4">
@@ -494,11 +607,13 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                     addToScheduleHandler(selectedCourse.id);
                     closeCourseModal();
                   }}
-                  disabled={addingCourse === selectedCourse.id}
+                  disabled={addingCourse === selectedCourse.id || hasTbaAttributes(selectedCourse)}
                   className={`w-full py-3 px-4 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center ${
-                    isLoggedIn 
-                      ? 'bg-amber-900 text-white hover:bg-amber-800' 
-                      : 'bg-gray-400 text-gray-600 hover:bg-gray-500'
+                    !isLoggedIn 
+                      ? 'bg-gray-400 text-gray-600 hover:bg-gray-500'
+                      : hasTbaAttributes(selectedCourse)
+                      ? 'bg-orange-400 text-white cursor-not-allowed'
+                      : 'bg-amber-900 text-white hover:bg-amber-800'
                   }`}
                 >
                   {addingCourse === selectedCourse.id ? (
@@ -510,6 +625,11 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                     <>
                       <div className="w-4 h-4 mr-2">🔒</div>
                       Sign in to Add
+                    </>
+                  ) : hasTbaAttributes(selectedCourse) ? (
+                    <>
+                      <AlertTriangle className="w-4 h-4 mr-2" />
+                      Information Not Available
                     </>
                   ) : (
                     <>
