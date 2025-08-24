@@ -7,12 +7,12 @@ interface ScheduledCourse {
   code: string;
   name: string;
   description: string;
-  days: string;
-  start_time: string;
-  end_time: string;
-  location: string;
+  days: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
   term: string;
-  professor: string;
+  professor: string | null;
 }
 
 interface Props {
@@ -41,7 +41,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
       'Monday': ['M'],
       'Tuesday': ['T'],
       'Wednesday': ['W'],
-      'Thursday': ['R'],
+      'Thursday': ['Th'],
       'Friday': ['F']
     };
     
@@ -52,16 +52,27 @@ const SchedulePage = ({ onNavigate }: Props) => {
   };
 
   // Helper function to convert abbreviated days to readable format
-  const formatDays = (days: string): string => {
-    const dayMap: { [key: string]: string } = {
-      'M': 'Mon',
-      'T': 'Tues', 
-      'W': 'Wed',
-      'R': 'Thur',
-      'F': 'Fri'
-    };
+  const formatDays = (days: string | null): string => {
+  if (!days) return 'TBA';
+    // Handle day combinations first (before single letters)
+    let result = days;
     
-    return days.split('').map(day => dayMap[day] || day).join(', ');
+    // Replace common day combinations
+    result = result.replace(/TTh/g, 'Tues, Thur');
+    result = result.replace(/MWF/g, 'Mon, Wed, Fri');
+    result = result.replace(/MW/g, 'Mon, Wed');
+    result = result.replace(/WF/g, 'Wed, Fri');
+    result = result.replace(/MT/g, 'Mon, Tues');
+    result = result.replace(/TF/g, 'Tues, Fri');
+    
+    // Then handle remaining single days (only if not already processed)
+    result = result.replace(/\bM\b/g, 'Mon');
+    result = result.replace(/\bT\b/g, 'Tues');
+    result = result.replace(/\bW\b/g, 'Wed');
+    result = result.replace(/\bTh\b/g, 'Thur');
+    result = result.replace(/\bF\b/g, 'Fri');
+    
+    return result;
   };
 
   const fetchSchedule = async () => {
@@ -192,12 +203,17 @@ const SchedulePage = ({ onNavigate }: Props) => {
     };
   }, []);
 
-  const formatTime = (time: string) => {
-    return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+  const formatTime = (time: string | null) => {
+    if (!time) return 'TBA';
+    try {
+      return new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+    } catch (error) {
+      return 'TBA';
+    }
   };
 
   const getTimeSlotIndex = (time: string) => {

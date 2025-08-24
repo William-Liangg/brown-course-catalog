@@ -22,3 +22,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Scraper files - do not commit these to repository
+backend/scripts/brown_scraper*.js
+backend/scripts/*_scraper*.js
+backend/scripts/clear_schedule.js
+backend/scripts/check_course_at_index.js
+backend/scripts/debug_*.js
+backend/scripts/test_*.js
+backend/scripts/run_scraper.js
+backend/scripts/step_by_step_insert.js
+backend/scripts/empty_courses.js
+backend/scripts/add_additional_courses.js
+backend/scripts/update_courses.js
+backend/scripts/fetch_*.js
+backend/scripts/export_courses_to_sql.js
