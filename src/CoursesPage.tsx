@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Search, BookOpen, Clock, MapPin, Calendar, Plus, AlertTriangle, CheckCircle, User, X } from "lucide-react";
+import { Search, BookOpen, Clock, MapPin, Calendar, Plus, AlertTriangle, CheckCircle, User, X, ChevronDown } from "lucide-react";
 import { getCourses, addToSchedule } from './utils/api';
-import CourseChatbot from './components/CourseChatbot';
 
 interface Course {
   id: number;
@@ -54,6 +53,9 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showTbaPopup, setShowTbaPopup] = useState(false);
   const [tbaPopupMessage, setTbaPopupMessage] = useState('');
+  const [selectedMajor, setSelectedMajor] = useState<string>('AFRI');
+  const [showMajorDropdown, setShowMajorDropdown] = useState(false);
+  const [majorSearchTerm, setMajorSearchTerm] = useState<string>('');
 
   const fetchCourses = async (searchQuery?: string) => {
     try {
@@ -66,6 +68,34 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
       setLoading(false);
     }
   };
+
+  // Extract majors from course codes
+  const extractMajors = (courses: Course[]): string[] => {
+    const majorSet = new Set<string>();
+    courses.forEach(course => {
+      const match = course.code.match(/^([A-Z]+)/);
+      if (match) {
+        majorSet.add(match[1]);
+      }
+    });
+    return Array.from(majorSet).sort();
+  };
+
+  // Get majors from current courses
+  const allMajors = extractMajors(courses);
+  
+  // Filter majors based on search term
+  const filteredMajors = allMajors.filter(major => 
+    major.toLowerCase().includes(majorSearchTerm.toLowerCase())
+  );
+
+  // Filter courses by selected major
+  const filteredCourses = courses.filter(course => {
+    if (selectedMajor === 'All Majors') return true;
+    
+    const courseMajor = course.code.match(/^([A-Z]+)/)?.[1];
+    return courseMajor === selectedMajor;
+  });
 
   const addToScheduleHandler = async (courseId: number) => {
     // Check if user is logged in
@@ -148,6 +178,22 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
     fetchCourses();
   }, []);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('.major-dropdown')) {
+        setShowMajorDropdown(false);
+        setMajorSearchTerm(''); // Clear search when closing
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // Debug: Log when conflictError changes
   useEffect(() => {
     console.log('conflictError state changed:', conflictError);
@@ -218,20 +264,20 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       {/* Header Section */}
-      <section className="relative py-16 px-4 bg-white">
-        <div className="container mx-auto text-center">
-          <div className="mb-8">
-            <BookOpen className="w-16 h-16 text-amber-900 mx-auto mb-4" />
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+      <section className="relative py-8 px-4 bg-white">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="mb-4">
+            <BookOpen className="w-12 h-12 text-amber-900 mx-auto mb-2" />
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Course Catalog
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 mb-4">
               Explore Brown University's comprehensive course offerings. Find the perfect classes to advance your academic journey.
             </p>
           </div>
 
           {/* Search Form */}
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-8">
+          <form onSubmit={handleSearch} className="max-w-4xl mx-auto mb-4">
             <div className="flex gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -243,6 +289,57 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                   className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-lg"
                 />
               </div>
+              
+              {/* Major Filter Dropdown */}
+              <div className="relative major-dropdown">
+                <button
+                  type="button"
+                  onClick={() => setShowMajorDropdown(!showMajorDropdown)}
+                  className="flex items-center justify-between w-48 px-4 py-4 border border-gray-300 rounded-lg bg-white text-left text-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent hover:bg-gray-50 transition-colors"
+                >
+                  <span className="truncate">{selectedMajor}</span>
+                  <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${showMajorDropdown ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {showMajorDropdown && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl z-10 max-h-80 overflow-hidden">
+                    <div className="sticky top-0 bg-white border-b border-gray-200 p-2">
+                      <input
+                        type="text"
+                        placeholder="Search majors..."
+                        value={majorSearchTerm}
+                        onChange={(e) => setMajorSearchTerm(e.target.value)}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      <div
+                        onClick={() => {
+                          setSelectedMajor('All Majors');
+                          setShowMajorDropdown(false);
+                        }}
+                        className="px-4 py-3 hover:bg-amber-50 cursor-pointer border-b border-gray-100 font-semibold text-amber-900 transition-colors"
+                      >
+                        All Majors (85)
+                      </div>
+                      {filteredMajors.map((major) => (
+                        <div
+                          key={major}
+                          onClick={() => {
+                            setSelectedMajor(major);
+                            setShowMajorDropdown(false);
+                          }}
+                          className="px-4 py-3 hover:bg-amber-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
+                        >
+                          <span className="font-medium">{major}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+              
               <button
                 type="submit"
                 className="bg-amber-900 text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-amber-800 transition-colors shadow-lg"
@@ -424,6 +521,18 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
             </div>
           )}
 
+          {/* Course Count */}
+          {!loading && (
+            <div className="mb-6 text-center">
+              <p className="text-gray-600">
+                {selectedMajor === 'All Majors' 
+                  ? `Showing all ${filteredCourses.length} courses`
+                  : `Showing ${filteredCourses.length} ${selectedMajor} courses`
+                }
+              </p>
+            </div>
+          )}
+
           {loading ? (
             <div className="text-center py-16">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-amber-900 mb-4"></div>
@@ -431,7 +540,7 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {courses.map((course) => (
+              {filteredCourses.map((course) => (
                 <div 
                   key={course.id} 
                   onClick={() => openCourseModal(course)}
@@ -481,7 +590,7 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
             </div>
           )}
 
-          {!loading && courses.length === 0 && !error && (
+          {!loading && filteredCourses.length === 0 && !error && (
             <div className="text-center py-16">
               <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <div className="text-xl text-gray-600 mb-2">No courses found</div>
@@ -644,8 +753,7 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
         </div>
       )}
 
-      {/* AI Course Chatbot */}
-      <CourseChatbot />
+
     </div>
   );
 };
