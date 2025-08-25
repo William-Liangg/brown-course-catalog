@@ -173,14 +173,14 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       {/* Header Section */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto text-center">
-          <div className="mb-8">
-            <User className="w-16 h-16 text-amber-900 mx-auto mb-4" />
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+      <section className="relative py-8 px-4 bg-white">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="mb-4">
+            <User className="w-12 h-12 text-amber-900 mx-auto mb-2" />
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               My Profile
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 mb-4">
               Manage your account settings and security preferences.
             </p>
           </div>

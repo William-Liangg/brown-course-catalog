@@ -30,10 +30,78 @@ const SchedulePage = ({ onNavigate }: Props) => {
   const [conflictInfo, setConflictInfo] = useState<{ course: ScheduledCourse; conflicts: ScheduledCourse[] } | null>(null);
 
   const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-  const timeSlots = [
-    '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM'
-  ];
+  
+  // Time grid configuration - 15-minute increments internally
+  const GRID_START_HOUR = 8; // 8:00 AM
+  const GRID_END_HOUR = 20; // 8:00 PM
+  const TIME_INCREMENT_MINUTES = 15; // 15-minute increments
+  
+  // Calculate total number of time slots
+  const totalHours = GRID_END_HOUR - GRID_START_HOUR;
+  const slotsPerHour = 60 / TIME_INCREMENT_MINUTES;
+  const totalTimeSlots = totalHours * slotsPerHour;
+
+  // Generate hourly labels for display (only show once per hour)
+  const generateHourlyLabels = () => {
+    const labels = [];
+    for (let hour = GRID_START_HOUR; hour < GRID_END_HOUR; hour++) {
+      const time = new Date(2000, 0, 1, hour, 0);
+      const label = time.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      labels.push(label);
+    }
+    return labels;
+  };
+
+  const hourlyLabels = generateHourlyLabels();
+
+  // Helper function to convert time string to grid row index (15-minute precision)
+  const timeToGridIndex = (timeString: string | null): number => {
+    if (!timeString) return -1;
+    
+    try {
+      // Handle different time formats
+      let time: Date;
+      
+      if (timeString.includes(':')) {
+        // Handle "HH:MM:SS" format
+        const [hours, minutes] = timeString.split(':').map(Number);
+        time = new Date(2000, 0, 1, hours, minutes);
+      } else {
+        // Handle other formats
+        time = new Date(`2000-01-01T${timeString}`);
+      }
+      
+      const hour = time.getHours();
+      const minute = time.getMinutes();
+      
+      // Calculate grid index
+      const hourDiff = hour - GRID_START_HOUR;
+      const minuteIndex = Math.floor(minute / TIME_INCREMENT_MINUTES);
+      const gridIndex = hourDiff * slotsPerHour + minuteIndex + 1; // +1 because grid rows start at 1
+      
+      return Math.max(1, Math.min(gridIndex, totalTimeSlots));
+    } catch (error) {
+      console.error('Error converting time to grid index:', timeString, error);
+      return -1;
+    }
+  };
+
+  // Helper function to calculate grid row span for a course
+  const calculateGridSpan = (startTime: string | null, endTime: string | null): number => {
+    if (!startTime || !endTime) return 1;
+    
+    const startIndex = timeToGridIndex(startTime);
+    const endIndex = timeToGridIndex(endTime);
+    
+    if (startIndex === -1 || endIndex === -1) return 1;
+    
+    const span = endIndex - startIndex;
+    return Math.max(1, span);
+  };
 
   // Helper function to check if a course day matches a grid day
   const dayMatches = (courseDays: string, gridDay: string): boolean => {
@@ -53,7 +121,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
 
   // Helper function to convert abbreviated days to readable format
   const formatDays = (days: string | null): string => {
-  if (!days) return 'TBA';
+    if (!days) return 'TBA';
     // Handle day combinations first (before single letters)
     let result = days;
     
@@ -216,51 +284,6 @@ const SchedulePage = ({ onNavigate }: Props) => {
     }
   };
 
-  const getTimeSlotIndex = (time: string) => {
-    // Handle different time formats
-    let hour: number;
-    
-    if (time.includes(':')) {
-      // Handle "10:00:00" format
-      const timeParts = time.split(':');
-      hour = parseInt(timeParts[0], 10);
-    } else {
-      // Handle other formats
-      hour = new Date(`2000-01-01T${time}`).getHours();
-    }
-    
-    const index = hour - 8; // 8 AM is index 0
-    
-    // Ensure index is valid
-    if (index < 0 || index >= timeSlots.length) {
-      return -1; // Return invalid index
-    }
-    
-    return index;
-  };
-
-  const getTimeSlotSpan = (startTime: string, endTime: string) => {
-    let startHour: number;
-    let endHour: number;
-    
-    if (startTime.includes(':')) {
-      const startParts = startTime.split(':');
-      startHour = parseInt(startParts[0], 10);
-    } else {
-      startHour = new Date(`2000-01-01T${startTime}`).getHours();
-    }
-    
-    if (endTime.includes(':')) {
-      const endParts = endTime.split(':');
-      endHour = parseInt(endParts[0], 10);
-    } else {
-      endHour = new Date(`2000-01-01T${endTime}`).getHours();
-    }
-    
-    const span = endHour - startHour;
-    return Math.max(1, span); // Minimum 1 slot
-  };
-
   const checkConflicts = (course: ScheduledCourse) => {
     const conflicts = schedule.filter(otherCourse => {
       if (otherCourse.id === course.id) return false;
@@ -268,9 +291,20 @@ const SchedulePage = ({ onNavigate }: Props) => {
       if (otherCourse.term !== course.term) return false;
       
       // Check for time overlap using string comparison (since times are in HH:MM:SS format)
+      // Add null checks for time values
+      if (!course.start_time || !course.end_time || !otherCourse.start_time || !otherCourse.end_time) {
+        return false; // Can't determine overlap if times are null
+      }
+      
+      // At this point, TypeScript knows all time values are non-null
+      const courseStart = course.start_time;
+      const courseEnd = course.end_time;
+      const otherStart = otherCourse.start_time;
+      const otherEnd = otherCourse.end_time;
+      
       const hasOverlap = !(
-        course.end_time <= otherCourse.start_time || 
-        course.start_time >= otherCourse.end_time
+        courseEnd <= otherStart || 
+        courseStart >= otherEnd
       );
       
       return hasOverlap;
@@ -295,20 +329,20 @@ const SchedulePage = ({ onNavigate }: Props) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       {/* Header Section */}
-      <section className="relative py-16 px-4 bg-white">
-        <div className="container mx-auto text-center">
-          <div className="mb-8">
-            <Calendar className="w-16 h-16 text-amber-900 mx-auto mb-4" />
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+      <section className="relative py-8 px-4 bg-white">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="mb-4">
+            <Calendar className="w-12 h-12 text-amber-900 mx-auto mb-2" />
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               My Schedule
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 mb-4">
               View and manage your course schedule. Click on any course to see details. Conflicts are highlighted for easy identification.
             </p>
           </div>
 
           {/* Term Selector */}
-          <div className="mb-8">
+          <div className="mb-4">
             <select
               value={selectedTerm}
               onChange={(e) => setSelectedTerm(e.target.value)}
@@ -320,7 +354,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
           </div>
 
           {error && (
-            <div className="mb-8 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl max-w-2xl mx-auto">
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl">
               {error}
             </div>
           )}
@@ -346,100 +380,112 @@ const SchedulePage = ({ onNavigate }: Props) => {
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              {/* Schedule Grid */}
-              <div className="grid grid-cols-6 gap-1">
-                {/* Header Row */}
+              {/* Header Row - Separate from time grid */}
+              <div className="grid grid-cols-6 gap-1" style={{ gridTemplateColumns: '100px repeat(5, 1fr)' }}>
                 <div className="bg-amber-900 text-white p-4 font-semibold text-center">Time</div>
                 {days.map(day => (
                   <div key={day} className="bg-amber-900 text-white p-4 font-semibold text-center">
                     {day}
                   </div>
                 ))}
+              </div>
 
-                {/* Time Slots */}
-                {timeSlots.map((timeSlot, timeIndex) => (
-                  <div key={timeSlot} className="contents">
-                    <div className="bg-gray-50 p-2 text-sm text-gray-600 text-center border-r border-gray-200">
-                      {timeSlot}
+              {/* Schedule Body Grid - Separate from header */}
+              <div 
+                className="grid grid-cols-6 gap-0 border-t border-gray-300" 
+                style={{ 
+                  gridTemplateRows: `repeat(${totalTimeSlots}, minmax(30px, auto))`,
+                  gridTemplateColumns: '100px repeat(5, 1fr)'
+                }}
+              >
+                {/* Time Labels Column - Only show hourly labels */}
+                {hourlyLabels.map((hourLabel, hourIndex) => {
+                  const startRow = hourIndex * slotsPerHour + 1;
+                  const endRow = (hourIndex + 1) * slotsPerHour;
+                  
+                  return (
+                    <div
+                      key={hourLabel}
+                      className="bg-gray-50 p-2 text-sm text-gray-600 text-center border-r border-gray-200 flex items-center justify-center"
+                      style={{ 
+                        gridRow: `${startRow} / ${endRow + 1}`,
+                        gridColumn: '1'
+                      }}
+                    >
+                      {hourLabel}
                     </div>
-                    {days.map(day => {
-                      const course = filteredSchedule.find(c => {
-                        const courseTimeIndex = getTimeSlotIndex(c.start_time);
-                        const dayMatch = dayMatches(c.days, day);
-                        const timeMatch = courseTimeIndex === timeIndex;
-                        
-                        return dayMatch && timeMatch;
-                      });
-                      
-                      if (course) {
-                        const span = getTimeSlotSpan(course.start_time, course.end_time);
-                        const hasConflict = checkConflicts(course);
-                        
+                  );
+                })}
 
-                        
-                        return (
-                          <div
-                            key={`${day}-${timeIndex}`}
-                            className={`p-2 border-b border-gray-200 ${hasConflict ? 'bg-red-50 border-red-400 shadow-sm' : 'bg-amber-50'} cursor-pointer hover:${hasConflict ? 'bg-red-100' : 'bg-amber-100'} transition-colors`}
-                            style={{ gridRow: `span ${Math.max(1, span)}` }}
-                            onClick={() => openCourseModal(course)}
-                          >
-                            <div className="text-xs font-semibold text-gray-900 mb-1">
-                              {course.code}
-                            </div>
-                            <div className="text-xs text-gray-700 mb-1 truncate">
-                              {course.name}
-                            </div>
-                            <div className="text-xs text-gray-600 mb-2">
-                              {formatDays(course.days)}
-                            </div>
-                            <div className="text-xs text-gray-600 mb-2">
-                              {formatTime(course.start_time)} - {formatTime(course.end_time)}
-                            </div>
-                            <div className="text-xs text-gray-600 mb-2">
-                              {course.location}
-                            </div>
-                            <div className="text-xs text-gray-600 mb-2">
-                              {course.professor || 'TBA'}
-                            </div>
-                            {hasConflict && (
-                              <div className="space-y-2 mb-2">
-                                <div className="flex items-center text-xs text-red-700 bg-red-100 px-2 py-1 rounded border border-red-300">
-                                  <AlertTriangle className="w-3 h-3 mr-1" />
-                                  <span className="font-semibold">Time Conflict</span>
-                                </div>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    showConflictDetails(course);
-                                  }}
-                                  className="text-xs text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded border border-red-300 transition-colors"
-                                >
-                                  View Conflicts
-                                </button>
+                {/* Add thin white grid lines between hours */}
+                {hourlyLabels.slice(0, -1).map((_, hourIndex) => {
+                  const separatorRow = (hourIndex + 1) * slotsPerHour + 1;
+                  
+                  return (
+                    <div
+                      key={`separator-${hourIndex}`}
+                      className="bg-white border-b border-white"
+                      style={{ 
+                        gridRow: `${separatorRow} / ${separatorRow + 1}`,
+                        gridColumn: '1',
+                        height: '5px'
+                      }}
+                    />
+                  );
+                })}
+
+                {/* Course Grid Cells */}
+                {days.map(day => {
+                  // Find all courses for this day
+                  const dayCourses = filteredSchedule.filter(course => dayMatches(course.days, day));
+                  
+                  return dayCourses.map(course => {
+                    if (!course.start_time || !course.end_time) return null;
+                    
+                    const gridStart = timeToGridIndex(course.start_time);
+                    const gridSpan = calculateGridSpan(course.start_time, course.end_time);
+                    const hasConflict = checkConflicts(course);
+                    
+                    if (gridStart === -1) return null;
+                    
+                    return (
+                      <div
+                        key={`${day}-${course.id}`}
+                        className="p-2"
+                        style={{ 
+                          gridRow: `${gridStart} / span ${gridSpan}`,
+                          gridColumn: `${days.indexOf(day) + 2} / ${days.indexOf(day) + 3}` // Explicitly constrain to single column
+                        }}
+                      >
+                        <div className={`bg-stone-100 border border-stone-200 rounded-lg p-3 h-full hover:bg-stone-200 transition-colors cursor-pointer ${hasConflict ? 'border-red-400 shadow-sm' : ''}`} onClick={() => openCourseModal(course)}>
+                          <div className="text-sm font-semibold text-gray-900 mb-1">{course.code}</div>
+                          <div className="text-xs text-gray-700 mb-2 line-clamp-2">{course.name}</div>
+                          <div className="text-xs text-gray-600 mb-1">{formatDays(course.days)}</div>
+                          <div className="text-xs text-gray-600 mb-1">{formatTime(course.start_time)} - {formatTime(course.end_time)}</div>
+                          <div className="text-xs text-gray-600 mb-1">{course.location}</div>
+                          <div className="text-xs text-gray-600">{course.professor || 'TBA'}</div>
+                          {hasConflict && (
+                            <div className="space-y-2 mb-2 mt-2">
+                              <div className="flex items-center text-xs text-red-700 bg-red-100 px-2 py-1 rounded border border-red-300">
+                                <AlertTriangle className="w-3 h-3 mr-1" />
+                                <span className="font-semibold">Time Conflict</span>
                               </div>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeFromScheduleHandler(course.id);
-                              }}
-                              className="text-xs text-red-600 hover:text-red-800 flex items-center"
-                            >
-                              <Trash2 className="w-3 h-3 mr-1" />
-                              Remove
-                            </button>
-                          </div>
-                        );
-                      }
-                      
-                      return (
-                        <div key={`${day}-${timeIndex}`} className="p-2 border-b border-gray-200 bg-white">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  showConflictDetails(course);
+                                }}
+                                className="text-xs text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1 rounded border border-red-300 transition-colors"
+                              >
+                                View Conflicts
+                              </button>
+                            </div>
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                ))}
+                      </div>
+                    );
+                  });
+                })}
               </div>
             </div>
           )}
@@ -520,6 +566,8 @@ const SchedulePage = ({ onNavigate }: Props) => {
                           otherCourse.id !== selectedCourse.id &&
                           otherCourse.days === selectedCourse.days &&
                           otherCourse.term === selectedCourse.term &&
+                          otherCourse.start_time && otherCourse.end_time &&
+                          selectedCourse.start_time && selectedCourse.end_time &&
                           (
                             (otherCourse.start_time <= selectedCourse.start_time && otherCourse.end_time > selectedCourse.start_time) ||
                             (otherCourse.start_time < selectedCourse.end_time && otherCourse.end_time >= selectedCourse.end_time) ||

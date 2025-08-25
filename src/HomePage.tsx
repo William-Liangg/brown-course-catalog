@@ -1,4 +1,6 @@
-import { GraduationCap, Search, Calendar, Users } from "lucide-react"
+import { useState } from 'react';
+import { GraduationCap, Search, Calendar, Users, MessageCircle, Send, X } from "lucide-react"
+import { getDatabaseCourseRecommendations } from './utils/api';
 
 interface HomePageProps {
   onNavigate: (route: string) => void
@@ -6,7 +8,151 @@ interface HomePageProps {
   userFirstName?: string
 }
 
+interface ChatMessage {
+  id: string;
+  type: 'user' | 'bot';
+  content: string;
+  timestamp: Date;
+}
+
 const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: '1',
+      type: 'bot',
+      content: "Hi! I'm BrunoBot, your AI course advisor. How can I help you find the perfect courses today? 🎓",
+      timestamp: new Date()
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
+
+  const handleChatSend = async () => {
+    if (!chatInput.trim() || isChatLoading) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: chatInput,
+      timestamp: new Date()
+    };
+
+    setChatMessages(prev => [...prev, userMessage]);
+    const latestUserMessage = chatInput;
+    setChatInput('');
+    setIsChatLoading(true);
+
+    try {
+      const userInput = latestUserMessage.toLowerCase();
+      let botResponse = "";
+      let scrapedData = null;
+
+      // Check if user is asking about a major we can scrape for
+      const majorKeywords = {
+        'computer science': ['comp sci', 'csci', 'computer science'],
+        'math': ['math', 'mathematics'],
+        'economics': ['econ', 'economics'],
+        'biology': ['bio', 'biology'],
+        'psychology': ['psych', 'psychology']
+      };
+
+      let detectedMajor = null;
+      for (const [major, keywords] of Object.entries(majorKeywords)) {
+        if (keywords.some(keyword => userInput.includes(keyword))) {
+          detectedMajor = major;
+          break;
+        }
+      }
+
+      // Try to get database recommendations if a major is detected
+      if (detectedMajor) {
+        try {
+          const response = await getDatabaseCourseRecommendations(detectedMajor);
+          if (response.success && response.data.recommendations) {
+            scrapedData = response.data;
+          }
+        } catch (error) {
+          console.log('Database query failed, using fallback response');
+        }
+      }
+
+      // Generate response based on major and database data
+      if (detectedMajor === 'computer science') {
+        if (scrapedData && scrapedData.recommendations) {
+          botResponse = `Awesome choice! 🎉 Here are some Computer Science courses from Brown's actual course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
+        } else {
+          botResponse = "Awesome choice! 🎉 Here are some Computer Science courses:\n\n- **CSCI 0150**: Introduction to Object-Oriented Programming\n- **CSCI 0160**: Data Structures and Algorithms\n- **CSCI 0320**: Introduction to Software Engineering\n- **CSCI 0330**: Computer Systems\n\nWant me to filter by intro-level, systems, AI, or advanced electives?";
+        }
+      } 
+      else if (detectedMajor === 'math') {
+        if (scrapedData && scrapedData.recommendations) {
+          botResponse = `Math is super important! Here are some popular options from Brown's course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
+        } else {
+          botResponse = "Math is super important! Here are some popular options:\n\n- **MATH 0090**: Single Variable Calculus I\n- **MATH 0100**: Single Variable Calculus II\n- **MATH 0520**: Linear Algebra\n- **MATH 0540**: Linear Algebra with Applications\n\nShould I pair these with other STEM classes for you?";
+        }
+      }
+      else if (detectedMajor === 'economics') {
+        if (scrapedData && scrapedData.recommendations) {
+          botResponse = `Great choice! Here are some Economics courses from Brown's course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
+        } else {
+          botResponse = "Great choice! Here are some Economics courses:\n\n- **ECON 0110**: Principles of Economics\n- **ECON 1130**: Intermediate Microeconomics\n- **ECON 1210**: Intermediate Macroeconomics\n- **ECON 1620**: Introduction to Econometrics\n\nInterested in micro, macro, or econometrics focus?";
+        }
+      }
+      else if (detectedMajor === 'biology') {
+        if (scrapedData && scrapedData.recommendations) {
+          botResponse = `Biology is fascinating! Here are some courses from Brown's course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
+        } else {
+          botResponse = "Biology is fascinating! Here are some courses:\n\n- **BIOL 0200**: The Foundation of Living Systems\n- **BIOL 0470**: Genetics\n- **BIOL 0800**: Principles of Physiology\n- **BIOL 1950**: Advanced Cell Biology\n\nWant to explore molecular, organismal, or ecological biology?";
+        }
+      }
+      else if (detectedMajor === 'psychology') {
+        if (scrapedData && scrapedData.recommendations) {
+          botResponse = `Psychology is so interesting! Here are some courses from Brown's course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
+        } else {
+          botResponse = "Psychology is so interesting! Here are some courses:\n\n- **CLPS 0010**: Mind, Brain, and Behavior\n- **CLPS 0200**: Social Psychology\n- **CLPS 0450**: Cognitive Psychology\n- **CLPS 0700**: Developmental Psychology\n\nInterested in cognitive, social, or clinical psychology?";
+        }
+      }
+      // General requirements/major questions
+      else if (userInput.includes("requirement") || userInput.includes("major") || userInput.includes("core")) {
+        botResponse = "To complete most majors, you'll need intro courses, core requirements, and advanced electives. 📚 Do you want a sample 4-year course plan or just the list of requirements for a specific major?";
+      }
+      // Help/General
+      else {
+        botResponse = "I'm here to help you find courses! 🎓 Try asking about a department (like 'CSCI', 'MATH', 'ECON', 'BIOL', 'PSYCH'), or about major requirements. You can also ask me about specific course levels or topics!";
+      }
+
+      const botMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: botResponse,
+        timestamp: new Date()
+      };
+
+      setChatMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      console.error('Error in chat:', error);
+      
+      const errorMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: 'bot',
+        content: "Sorry, I'm having trouble connecting right now. Please try again in a moment!",
+        timestamp: new Date()
+      };
+
+      setChatMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsChatLoading(false);
+    }
+  };
+
+  const handleChatKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleChatSend();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-50">
       {/* Hero Section */}
@@ -40,12 +186,20 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
             >
               Browse Courses
             </button>
-            {!isLoggedIn && (
+            {!isLoggedIn ? (
               <button
                 onClick={() => onNavigate("signup")}
                 className="bg-white text-amber-900 px-8 py-4 rounded-lg text-lg font-semibold border-2 border-amber-900 hover:bg-amber-50 transition-colors"
               >
-                Get Started
+                Sign Up to Chat with BrunoBot
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsChatOpen(true)}
+                className="bg-white text-amber-900 px-8 py-4 rounded-lg text-lg font-semibold border-2 border-amber-900 hover:bg-amber-50 transition-colors flex items-center"
+              >
+                <MessageCircle className="w-5 h-5 mr-2" />
+                Chat with BrunoBot
               </button>
             )}
           </div>
@@ -53,7 +207,7 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="bg-white p-6 rounded-xl shadow-md">
-              <div className="text-3xl font-bold text-amber-900 mb-2">2,000+</div>
+              <div className="text-3xl font-bold text-amber-900 mb-2">1,200+</div>
               <div className="text-gray-600">Courses Available</div>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-md">
@@ -61,7 +215,7 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
               <div className="text-gray-600">Academic Departments</div>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-md">
-              <div className="text-3xl font-bold text-amber-900 mb-2">80+</div>
+              <div className="text-3xl font-bold text-amber-900 mb-2">85+</div>
               <div className="text-gray-600">Concentrations Offered</div>
             </div>
           </div>
@@ -165,6 +319,90 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
           </div>
         </div>
       </footer>
+
+
+
+            {/* Sliding Chat Panel */}
+      <div className={`fixed top-0 right-0 h-full w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${isChatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="h-full flex flex-col">
+          {/* Chat Header */}
+          <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                  <MessageCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">BrunoBot</h3>
+                  <p className="text-sm opacity-90">AI Course Advisor</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsChatOpen(false)}
+                className="text-white hover:text-gray-200 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+          </div>
+
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {chatMessages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-xs px-4 py-2 rounded-lg ${
+                    message.type === 'user'
+                      ? 'bg-amber-600 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                  <p className="text-xs opacity-70 mt-1">
+                    {message.timestamp.toLocaleTimeString()}
+                  </p>
+                </div>
+              </div>
+            ))}
+            {isChatLoading && (
+              <div className="flex justify-start">
+                <div className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Chat Input */}
+          <div className="border-t border-gray-200 p-4">
+            <div className="flex space-x-2">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={handleChatKeyPress}
+                placeholder="Ask me about courses..."
+                className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                disabled={isChatLoading}
+              />
+              <button
+                onClick={handleChatSend}
+                disabled={!chatInput.trim() || isChatLoading}
+                className="bg-amber-600 text-white p-3 rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Send className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -18,4 +18,27 @@ exports.getAllCourses = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch courses' });
   }
+};
+
+// Get distinct course majors/prefixes
+exports.getCourseMajors = async (req, res) => {
+  try {
+    const query = `
+      SELECT DISTINCT 
+        CASE 
+          WHEN code ~ '^[A-Z]+' THEN regexp_replace(code, '^([A-Z]+).*', '\\1')
+          ELSE 'OTHER'
+        END as major
+      FROM courses 
+      WHERE code IS NOT NULL AND code != ''
+      ORDER BY major
+    `;
+    
+    const result = await db.query(query);
+    const majors = result.rows.map(row => row.major);
+    res.json({ majors });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch course majors' });
+  }
 }; 

@@ -44,11 +44,16 @@ export const removeFromSchedule = (courseId: number) =>
 export const getCourses = (search?: string) => 
   apiCall(search ? `/courses?search=${encodeURIComponent(search)}` : '/courses');
 
+export const getCourseMajors = () => apiCall('/courses/majors');
+
 export const getCourseRecommendations = (interests: string) => 
   apiCall('/ai/recommend', {
     method: 'POST',
     body: JSON.stringify({ interests }),
   });
+
+export const getDatabaseCourseRecommendations = (major: string) => 
+  apiCall(`/recommendations/course-recommendations/${encodeURIComponent(major)}`);
 
 export const updateNames = async (firstName: string, lastName: string) => {
   return apiCall('/update-names', {
