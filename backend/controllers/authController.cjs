@@ -3,35 +3,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('../models/db.cjs');
 
-// Helper function to get JWT secret with validation
-const getJWTSecret = () => {
-  const JWT_SECRET = process.env.JWT_SECRET;
-  if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is required');
-  }
-  return JWT_SECRET;
-};
+// store API keys
 
-// Helper function to set httpOnly cookie
-const setAuthCookie = (res, token) => {
-  res.cookie('authToken', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: '/'
-  });
-};
-
-// Helper function to clear auth cookie
-const clearAuthCookie = (res) => {
-  res.clearCookie('authToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    path: '/'
-  });
-};
+const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.signup = async (req, res) => {
   const { email, password, firstName, lastName } = req.body;
@@ -51,21 +25,8 @@ exports.signup = async (req, res) => {
     );
     const user = result.rows[0];
     // Generate token
-    const JWT_SECRET = getJWTSecret();
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-    
-    // Set httpOnly cookie instead of returning token in response
-    setAuthCookie(res, token);
-    
-    res.status(201).json({ 
-      user: { 
-        id: user.id, 
-        email: user.email, 
-        firstName: user.first_name, 
-        lastName: user.last_name 
-      },
-      message: 'User registered successfully'
-    });
+    res.status(201).json({ user: { id: user.id, email: user.email, firstName: user.first_name, lastName: user.last_name }, token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Registration failed' });
@@ -83,34 +44,19 @@ exports.login = async (req, res) => {
     const user = result.rows[0];
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
-    const JWT_SECRET = getJWTSecret();
     const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
-    
-    // Set httpOnly cookie instead of returning token in response
-    setAuthCookie(res, token);
-    
     res.json({ 
       user: { 
         id: user.id, 
         email: user.email, 
         firstName: user.first_name, 
         lastName: user.last_name 
-      },
-      message: 'Login successful'
+      }, 
+      token 
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Login failed' });
-  }
-};
-
-exports.logout = async (req, res) => {
-  try {
-    clearAuthCookie(res);
-    res.json({ message: 'Logged out successfully' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Logout failed' });
   }
 };
 
