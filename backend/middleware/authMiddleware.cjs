@@ -3,9 +3,22 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // signs JWT tokens and verifies them for user authentication
 
 module.exports = function (req, res, next) {
-  const authHeader = req.headers['authorization']; // get token from Authorization header
-  const token = authHeader && authHeader.split(' ')[1]; // extract token from "Bearer <token>" format
-  if (!token) return res.status(401).json({ error: 'No token provided' });
+  // Check for token in Authorization header first
+  let token = null;
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.split(' ')[1]) {
+    token = authHeader.split(' ')[1];
+  }
+  
+  // If no token in header, check for httpOnly cookie
+  if (!token && req.cookies && req.cookies.authToken) {
+    token = req.cookies.authToken;
+  }
+  
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     req.user = decoded;

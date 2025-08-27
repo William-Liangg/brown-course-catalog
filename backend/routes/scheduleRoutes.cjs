@@ -85,14 +85,14 @@ router.post('/', async (req, res) => {
 });
 
 // Remove course from schedule
-router.delete('/:courseId', async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const { courseId } = req.params;
+    const { id } = req.params;
     const userId = req.user.id;
 
     const result = await query(
       'DELETE FROM schedules WHERE user_id = $1 AND course_id = $2 RETURNING id',
-      [userId, courseId]
+      [userId, id]
     );
 
     if (result.rows.length === 0) {
