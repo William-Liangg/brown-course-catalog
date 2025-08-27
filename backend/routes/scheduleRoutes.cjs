@@ -2,9 +2,13 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../models/db.cjs');
 const authMiddleware = require('../middleware/authMiddleware.cjs');
+const { validationRules, handleValidationErrors, sanitizeInput } = require('../middleware/validationMiddleware.cjs');
 
 // Apply authentication middleware to all schedule routes
 router.use(authMiddleware);
+
+// Apply input sanitization to all routes
+router.use(sanitizeInput);
 
 // Get current user's schedule
 router.get('/', async (req, res) => {
@@ -26,14 +30,10 @@ router.get('/', async (req, res) => {
 });
 
 // Add course to schedule
-router.post('/', async (req, res) => {
+router.post('/', validationRules.addToSchedule, handleValidationErrors, async (req, res) => {
   try {
     const { courseId, term } = req.body;
     const userId = req.user.id;
-
-    if (!courseId || !term) {
-      return res.status(400).json({ error: 'Course ID and term are required' });
-    }
 
     // Check if course exists
     const courseResult = await query('SELECT * FROM courses WHERE id = $1', [courseId]);
@@ -89,7 +89,7 @@ router.post('/', async (req, res) => {
 });
 
 // Remove course from schedule
-router.delete('/:courseId', async (req, res) => {
+router.delete('/:courseId', validationRules.removeFromSchedule, handleValidationErrors, async (req, res) => {
   try {
     const { courseId } = req.params;
     const userId = req.user.id;

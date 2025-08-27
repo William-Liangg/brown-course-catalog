@@ -1,10 +1,8 @@
 // Utility functions for making authenticated API calls
 
 export const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
   return {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` })
   };
 };
 
@@ -14,6 +12,7 @@ export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
   
   const response = await fetch(url, {
     ...options,
+    credentials: 'include', // Include cookies in requests
     headers: {
       ...headers,
       ...options.headers,
@@ -27,12 +26,39 @@ export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
     if (errorData.conflicts) {
       (error as any).conflicts = errorData.conflicts;
     }
+    if (errorData.details) {
+      (error as any).validationErrors = errorData.details;
+    }
     throw error;
   }
 
   return response.json();
 };
 
+// Authentication functions
+export const login = async (email: string, password: string) => {
+  return apiCall('/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+};
+
+export const signup = async (email: string, password: string, firstName: string, lastName: string) => {
+  return apiCall('/signup', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, firstName, lastName }),
+  });
+};
+
+export const logout = async () => {
+  return apiCall('/logout', {
+    method: 'POST',
+  });
+};
+
+export const getMe = () => apiCall('/me');
+
+// Schedule functions
 export const getSchedule = () => apiCall('/schedule');
 export const addToSchedule = (courseId: number, term: string) => 
   apiCall('/schedule', {

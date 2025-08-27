@@ -1,9 +1,13 @@
 const express = require('express');
 const { Pool } = require('pg');
 const OpenAI = require('openai');
+const { validationRules, handleValidationErrors, sanitizeInput } = require('../middleware/validationMiddleware.cjs');
 require('dotenv').config();
 
 const router = express.Router();
+
+// Apply input sanitization to all routes
+router.use(sanitizeInput);
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -16,16 +20,9 @@ const pool = new Pool({
 });
 
 // POST /api/ai-recommend
-router.post('/ai-recommend', async (req, res) => {
+router.post('/ai-recommend', validationRules.aiRecommendation, handleValidationErrors, async (req, res) => {
   try {
     const { major, interests } = req.body;
-
-    // Validate input
-    if (!major || !interests) {
-      return res.status(400).json({
-        error: 'Both major and interests are required'
-      });
-    }
 
     console.log(`AI recommendation request for major: ${major}, interests: ${interests}`);
 

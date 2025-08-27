@@ -5,6 +5,7 @@ import CoursesPage from './CoursesPage';
 import HomePage from './HomePage';
 import SchedulePage from './SchedulePage';
 import ProfilePage from './ProfilePage';
+import { logout } from './utils/api';
 
 interface NavbarProps {
   onNavigate: (route: string) => void;
@@ -112,9 +113,15 @@ const App = () => {
     localStorage.setItem('currentRoute', route);
   }, [route]);
 
-  const handleLogout = () => {
-    // Clear all authentication data
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    try {
+      // Call the logout API to clear the httpOnly cookie
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
+    // Clear user data from localStorage (but not token - that's handled by the cookie)
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userId');
     localStorage.removeItem('userFirstName');

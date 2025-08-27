@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { login } from './utils/api';
 
 interface Props {
   onNavigate: (route: string) => void;
@@ -8,35 +9,44 @@ const LoginPage = ({ onNavigate }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setValidationErrors({});
+    
     try {
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
+      const data = await login(email, password);
       console.log('Login response data:', data);
-      if (!res.ok) throw new Error(data.error || 'Login failed');
       
-      // Store authentication data
-      localStorage.setItem('token', data.token);
+      // Store user data in localStorage (but not the token - that's in httpOnly cookie)
       localStorage.setItem('userEmail', data.user.email);
       localStorage.setItem('userId', data.user.id.toString());
       localStorage.setItem('userFirstName', data.user.firstName);
       localStorage.setItem('userLastName', data.user.lastName);
       
-      console.log('Stored token:', data.token);
-      console.log('Stored userEmail:', data.user.email);
-      console.log('Stored userId:', data.user.id);
-      console.log('Stored firstName:', data.user.firstName);
-      console.log('Stored lastName:', data.user.lastName);
+      console.log('Stored user data:', {
+        email: data.user.email,
+        id: data.user.id,
+        firstName: data.user.firstName,
+        lastName: data.user.lastName
+      });
       
       onNavigate('home');
     } catch (err: any) {
+      console.error('Login error:', err);
+      
+      // Handle validation errors
+      if (err.validationErrors) {
+        const errors: {[key: string]: string} = {};
+        err.validationErrors.forEach((error: any) => {
+          errors[error.field] = error.message;
+        });
+        setValidationErrors(errors);
+        return;
+      }
+      
       setError(err.message);
     }
   };
@@ -57,9 +67,14 @@ const LoginPage = ({ onNavigate }: Props) => {
                 placeholder="Email address"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm ${
+                  validationErrors.email ? 'border-red-500' : 'border-gray-300'
+                }`}
                 required
               />
+              {validationErrors.email && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.email}</p>
+              )}
             </div>
             <div>
               <input
@@ -67,9 +82,14 @@ const LoginPage = ({ onNavigate }: Props) => {
                 placeholder="Password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm"
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm ${
+                  validationErrors.password ? 'border-red-500' : 'border-gray-300'
+                }`}
                 required
               />
+              {validationErrors.password && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.password}</p>
+              )}
             </div>
           </div>
 
