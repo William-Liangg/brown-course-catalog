@@ -14,6 +14,9 @@ require('dotenv').config();
 // Initialize Express app
 const app = express();
 
+// Trust proxy for rate limiting behind load balancers (Render)
+app.set('trust proxy', 1);
+
 // HTTPS Enforcement for Production
 if (process.env.NODE_ENV === 'production') {
   app.use((req, res, next) => {
@@ -126,8 +129,24 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log('Schedule routes should be available at /api/schedule');
-  console.log('Security features enabled: Helmet, CORS, Rate Limiting, Cookie Parser');
+
+// Test database connection on startup
+const testDatabaseConnection = async () => {
+  try {
+    const db = require('./models/db.cjs');
+    await db.query('SELECT NOW()');
+    console.log('✅ Database connection successful');
+  } catch (error) {
+    console.error('❌ Database connection failed:', error.message);
+    console.log('💡 Make sure to run: npm run setup-db');
+  }
+};
+
+app.listen(PORT, async () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log('📚 Schedule routes available at /api/schedule');
+  console.log('🔒 Security features enabled: Helmet, CORS, Rate Limiting, Cookie Parser');
+  
+  // Test database connection
+  await testDatabaseConnection();
 });

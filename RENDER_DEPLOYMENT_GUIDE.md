@@ -61,7 +61,7 @@ brown-course-catalog/
 
 **Build & Deploy Settings:**
 - **Root Directory**: `backend`
-- **Build Command**: `npm install`
+- **Build Command**: `npm install && npm run setup-db`
 - **Start Command**: `npm start`
 
 **Environment Variables:**
