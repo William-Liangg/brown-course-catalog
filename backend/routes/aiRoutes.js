@@ -57,7 +57,7 @@ router.post('/ai-recommend', async (req, res) => {
         LIMIT 15
       `;
       
-      const result = await pool.query(query, [queryEmbedding]);
+      const result = await pool.query(query, [JSON.stringify(queryEmbedding)]);
       courses = result.rows;
       
       if (courses.length === 0) {

@@ -69,11 +69,12 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
       if (detectedMajor) {
         try {
           const response = await getAICourseRecommendations(detectedMajor, latestUserMessage);
-          if (response.success && response.data.recommendations) {
-            aiRecommendations = response.data;
+          console.log('AI response:', response);
+          if (response.recommendations && response.recommendations.length > 0) {
+            aiRecommendations = response;
           }
         } catch (error) {
-          console.log('AI recommendation failed, using fallback response');
+          console.log('AI recommendation failed, using fallback response:', error);
         }
       }
 
@@ -312,7 +313,7 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
 
 
             {/* Sliding Chat Panel */}
-      <div className={`fixed top-0 right-0 h-full w-96 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${isChatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div className={`fixed top-0 right-0 h-full w-[40%] bg-white shadow-2xl transform transition-transform duration-300 ease-in-out z-50 ${isChatOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="h-full flex flex-col">
           {/* Chat Header */}
           <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-4">
