@@ -38,6 +38,15 @@ backend/scripts/update_courses.js
 backend/scripts/fetch_*.js
 backend/scripts/export_courses_to_sql.js
 
+# Development and test files - preserve but don't commit
+test_*.js
+backend/test-*.js
+backend/temp_insert.sql
+cookies.txt
+backend/cookies.txt
+backend/*.png
+backend/fix_sql.js
+
 # Environment variables - keep API keys secure
 .env
 backend/.env
