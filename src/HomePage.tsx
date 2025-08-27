@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { GraduationCap, Search, Calendar, Users, MessageCircle, Send, X } from "lucide-react"
-import { getDatabaseCourseRecommendations } from './utils/api';
+import { getAICourseRecommendations } from './utils/api';
 
 interface HomePageProps {
   onNavigate: (route: string) => void
@@ -46,11 +46,10 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
     try {
       const userInput = latestUserMessage.toLowerCase();
       let botResponse = "";
-      let scrapedData = null;
 
-      // Check if user is asking about a major we can scrape for
+      // Check if user is asking about a major we can help with
       const majorKeywords = {
-        'computer science': ['comp sci', 'csci', 'computer science'],
+        'computer science': ['comp sci', 'csci', 'computer science', 'cs'],
         'math': ['math', 'mathematics'],
         'economics': ['econ', 'economics'],
         'biology': ['bio', 'biology'],
@@ -65,61 +64,51 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
         }
       }
 
-      // Try to get database recommendations if a major is detected
+      // Try to get AI recommendations if a major is detected
+      let aiRecommendations = null;
       if (detectedMajor) {
         try {
-          const response = await getDatabaseCourseRecommendations(detectedMajor);
+          const response = await getAICourseRecommendations(detectedMajor, latestUserMessage);
           if (response.success && response.data.recommendations) {
-            scrapedData = response.data;
+            aiRecommendations = response.data;
           }
         } catch (error) {
-          console.log('Database query failed, using fallback response');
+          console.log('AI recommendation failed, using fallback response');
         }
       }
 
-      // Generate response based on major and database data
-      if (detectedMajor === 'computer science') {
-        if (scrapedData && scrapedData.recommendations) {
-          botResponse = `Awesome choice! 🎉 Here are some Computer Science courses from Brown's actual course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
-        } else {
+      // Generate response based on AI recommendations or fallback
+      if (aiRecommendations && aiRecommendations.recommendations) {
+        const recommendationsList = aiRecommendations.recommendations
+          .map((rec: any) => `- **${rec.code}**: ${rec.title}\n  *${rec.reason}*`)
+          .join('\n\n');
+        
+        botResponse = `🎓 Here are some personalized course recommendations for you:\n\n${recommendationsList}\n\n*Based on your interests in ${detectedMajor}*`;
+      } else {
+        // Fallback responses for when AI is not available
+        if (detectedMajor === 'computer science') {
           botResponse = "Awesome choice! 🎉 Here are some Computer Science courses:\n\n- **CSCI 0150**: Introduction to Object-Oriented Programming\n- **CSCI 0160**: Data Structures and Algorithms\n- **CSCI 0320**: Introduction to Software Engineering\n- **CSCI 0330**: Computer Systems\n\nWant me to filter by intro-level, systems, AI, or advanced electives?";
-        }
-      } 
-      else if (detectedMajor === 'math') {
-        if (scrapedData && scrapedData.recommendations) {
-          botResponse = `Math is super important! Here are some popular options from Brown's course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
-        } else {
+        } 
+        else if (detectedMajor === 'math') {
           botResponse = "Math is super important! Here are some popular options:\n\n- **MATH 0090**: Single Variable Calculus I\n- **MATH 0100**: Single Variable Calculus II\n- **MATH 0520**: Linear Algebra\n- **MATH 0540**: Linear Algebra with Applications\n\nShould I pair these with other STEM classes for you?";
         }
-      }
-      else if (detectedMajor === 'economics') {
-        if (scrapedData && scrapedData.recommendations) {
-          botResponse = `Great choice! Here are some Economics courses from Brown's course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
-        } else {
+        else if (detectedMajor === 'economics') {
           botResponse = "Great choice! Here are some Economics courses:\n\n- **ECON 0110**: Principles of Economics\n- **ECON 1130**: Intermediate Microeconomics\n- **ECON 1210**: Intermediate Macroeconomics\n- **ECON 1620**: Introduction to Econometrics\n\nInterested in micro, macro, or econometrics focus?";
         }
-      }
-      else if (detectedMajor === 'biology') {
-        if (scrapedData && scrapedData.recommendations) {
-          botResponse = `Biology is fascinating! Here are some courses from Brown's course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
-        } else {
+        else if (detectedMajor === 'biology') {
           botResponse = "Biology is fascinating! Here are some courses:\n\n- **BIOL 0200**: The Foundation of Living Systems\n- **BIOL 0470**: Genetics\n- **BIOL 0800**: Principles of Physiology\n- **BIOL 1950**: Advanced Cell Biology\n\nWant to explore molecular, organismal, or ecological biology?";
         }
-      }
-      else if (detectedMajor === 'psychology') {
-        if (scrapedData && scrapedData.recommendations) {
-          botResponse = `Psychology is so interesting! Here are some courses from Brown's course database:\n\n${scrapedData.recommendations}\n\n*Based on ${scrapedData.source}*`;
-        } else {
+        else if (detectedMajor === 'psychology') {
           botResponse = "Psychology is so interesting! Here are some courses:\n\n- **CLPS 0010**: Mind, Brain, and Behavior\n- **CLPS 0200**: Social Psychology\n- **CLPS 0450**: Cognitive Psychology\n- **CLPS 0700**: Developmental Psychology\n\nInterested in cognitive, social, or clinical psychology?";
         }
-      }
-      // General requirements/major questions
-      else if (userInput.includes("requirement") || userInput.includes("major") || userInput.includes("core")) {
-        botResponse = "To complete most majors, you'll need intro courses, core requirements, and advanced electives. 📚 Do you want a sample 4-year course plan or just the list of requirements for a specific major?";
-      }
-      // Help/General
-      else {
-        botResponse = "I'm here to help you find courses! 🎓 Try asking about a department (like 'CSCI', 'MATH', 'ECON', 'BIOL', 'PSYCH'), or about major requirements. You can also ask me about specific course levels or topics!";
+        // General requirements/major questions
+        else if (userInput.includes("requirement") || userInput.includes("major") || userInput.includes("core")) {
+          botResponse = "To complete most majors, you'll need intro courses, core requirements, and advanced electives. 📚 Do you want a sample 4-year course plan or just the list of requirements for a specific major?";
+        }
+        // Help/General
+        else {
+          botResponse = "I'm here to help you find courses! 🎓 Try asking about a department (like 'CSCI', 'MATH', 'ECON', 'BIOL', 'PSYCH'), or about major requirements. You can also ask me about specific course levels or topics!";
+        }
       }
 
       const botMessage: ChatMessage = {

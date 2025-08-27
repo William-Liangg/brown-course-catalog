@@ -46,10 +46,10 @@ export const getCourses = (search?: string) =>
 
 export const getCourseMajors = () => apiCall('/courses/majors');
 
-export const getCourseRecommendations = (interests: string) => 
-  apiCall('/ai/recommend', {
+export const getAICourseRecommendations = (major: string, interests: string) => 
+  apiCall('/ai/ai-recommend', {
     method: 'POST',
-    body: JSON.stringify({ interests }),
+    body: JSON.stringify({ major, interests }),
   });
 
 export const getDatabaseCourseRecommendations = (major: string) => 

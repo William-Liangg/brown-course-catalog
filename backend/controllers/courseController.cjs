@@ -7,7 +7,7 @@ exports.getAllCourses = async (req, res) => {
     let params = [];
 
     if (search) {
-      query += ' WHERE name ILIKE $1 OR code ILIKE $1';
+      query += ' WHERE (name ILIKE $1 OR code ILIKE $1 OR description ILIKE $1 OR professor ILIKE $1)';
       params.push(`%${search}%`);
     }
 

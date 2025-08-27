@@ -204,6 +204,28 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
     fetchCourses(search);
   };
 
+  // Real-time search as user types with debouncing
+  const [searchTimeout, setSearchTimeout] = useState<number | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearch(value);
+    
+    // Clear previous timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    // Set new timeout for debounced search
+    const timeoutId = setTimeout(() => {
+      setIsSearching(true);
+      fetchCourses(value).finally(() => setIsSearching(false));
+    }, 300);
+    
+    setSearchTimeout(timeoutId);
+  };
+
   const openCourseModal = (course: Course) => {
     setSelectedCourse(course);
     setShowCourseModal(true);
@@ -283,11 +305,16 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search courses by name, code, or department..."
+                  placeholder="Search courses by name, code, description, or professor..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
+                  onChange={handleSearchChange}
                   className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-lg"
                 />
+                {isSearching && (
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-500"></div>
+                  </div>
+                )}
               </div>
               
               {/* Major Filter Dropdown */}
@@ -529,6 +556,16 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
                   ? `Showing all ${filteredCourses.length} courses`
                   : `Showing ${filteredCourses.length} ${selectedMajor} courses`
                 }
+              </p>
+            </div>
+          )}
+
+          {/* Search Results Counter */}
+          {!loading && (
+            <div className="mb-6 text-center">
+              <p className="text-gray-600">
+                {search ? `Found ${filteredCourses.length} courses matching "${search}"` : `Showing ${filteredCourses.length} courses`}
+                {selectedMajor !== 'All Majors' && ` in ${selectedMajor}`}
               </p>
             </div>
           )}

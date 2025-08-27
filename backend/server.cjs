@@ -3,7 +3,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/authRoutes.cjs');
 const courseRoutes = require('./routes/courseRoutes.cjs');
 const scheduleRoutes = require('./routes/scheduleRoutes.cjs');
-const aiRoutes = require('./routes/aiRoutes.cjs');
+const aiRoutes = require('./routes/aiRoutes');
 const courseRecommendationRoutes = require('./routes/courseRecommendationRoutes');
 require('dotenv').config();
 
