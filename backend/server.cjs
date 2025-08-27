@@ -110,18 +110,19 @@ app.get('/api/schedule-test', (req, res) => {
   res.json({ message: 'Direct schedule test route works' });
 });
 
-// Serve static files from the React build
-app.use(express.static(path.join(__dirname, '../dist')));
-
-// Serve React app for all other routes (must be last)
-app.get('*', (req, res) => {
-  // Skip API routes
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
-  
-  // Serve the React app for all non-API routes
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+// API-only server - no static file serving needed
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Brown Course Catalog API',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/signup, /api/login, /api/logout, /api/me',
+      courses: '/api/courses, /api/courses/majors',
+      schedule: '/api/schedule/*',
+      ai: '/api/ai/ai-recommend',
+      recommendations: '/api/recommendations/*'
+    }
+  });
 });
 
 const PORT = process.env.PORT || 3001;
