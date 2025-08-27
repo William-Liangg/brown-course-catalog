@@ -12,16 +12,16 @@ COPY tailwind.config.js ./
 COPY postcss.config.* ./
 COPY eslint.config.js ./
 
-# Install frontend dependencies (including dev dependencies for build)
-RUN npm ci
+# Clear npm cache and install frontend dependencies
+RUN npm cache clean --force && npm ci
 
 # Copy frontend source code
 COPY src/ ./src/
 COPY public/ ./public/
 COPY index.html ./
 
-# Build frontend
-RUN npm run build
+# Build frontend with timestamp to force cache invalidation
+RUN echo "Build timestamp: $(date)" && npm run build
 
 # Stage 2: Backend setup
 FROM node:18-alpine AS backend-builder
@@ -31,8 +31,8 @@ WORKDIR /app/backend
 # Copy backend package files
 COPY backend/package*.json ./
 
-# Install backend dependencies
-RUN npm ci
+# Clear npm cache and install backend dependencies
+RUN npm cache clean --force && npm ci
 
 # Copy backend source code
 COPY backend/ ./
