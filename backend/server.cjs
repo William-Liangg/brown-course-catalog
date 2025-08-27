@@ -115,6 +115,12 @@ app.use(express.static(path.join(__dirname, '../dist')));
 
 // Serve React app for all other routes (must be last)
 app.get('*', (req, res) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  // Serve the React app for all non-API routes
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 

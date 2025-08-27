@@ -2,7 +2,7 @@
 # Stage 1: Build frontend
 FROM node:18-alpine AS frontend-builder
 
-WORKDIR /app/frontend
+WORKDIR /app
 
 # Copy frontend package files
 COPY package*.json ./
@@ -49,8 +49,8 @@ RUN adduser -S nodejs -u 1001
 
 WORKDIR /app
 
-# Copy built frontend from stage 1
-COPY --from=frontend-builder /app/frontend/dist ./public
+# Copy built frontend from stage 1 to /app/dist (where backend expects it)
+COPY --from=frontend-builder /app/dist ./dist
 
 # Copy backend from stage 2
 COPY --from=backend-builder /app/backend ./backend
@@ -75,7 +75,7 @@ EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
+  CMD node -e "require('http').get('http://localhost:3001/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
