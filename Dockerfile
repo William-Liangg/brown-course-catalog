@@ -12,8 +12,8 @@ COPY tailwind.config.js ./
 COPY postcss.config.* ./
 COPY eslint.config.js ./
 
-# Install frontend dependencies
-RUN npm ci --only=production
+# Install frontend dependencies (including dev dependencies for build)
+RUN npm ci
 
 # Copy frontend source code
 COPY src/ ./src/
@@ -32,7 +32,7 @@ WORKDIR /app/backend
 COPY backend/package*.json ./
 
 # Install backend dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy backend source code
 COPY backend/ ./
@@ -59,6 +59,10 @@ COPY --from=backend-builder /app/backend/node_modules ./backend/node_modules
 # Copy package files for potential runtime dependencies
 COPY package*.json ./
 COPY backend/package*.json ./backend/
+
+# Install production dependencies for runtime
+RUN npm ci --only=production
+RUN cd backend && npm ci --only=production
 
 # Set ownership to nodejs user
 RUN chown -R nodejs:nodejs /app
