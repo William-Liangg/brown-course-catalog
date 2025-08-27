@@ -3,13 +3,13 @@ const router = express.Router();
 const courseRecommendationService = require('../services/courseRecommendationService');
 
 // Get course recommendations from Brown University database
-router.get('/course-recommendations/:major', async (req, res) => {
+router.get('/course-recommendations', async (req, res) => {
   try {
-    const { major } = req.params;
+    const { major } = req.query;
     
     console.log(`Fetching course recommendations for: ${major}`);
     
-    const recommendations = await courseRecommendationService.getCourseRecommendations(major);
+    const recommendations = await courseRecommendationService.getCourseRecommendations(major || '');
     
     res.json(recommendations);
     

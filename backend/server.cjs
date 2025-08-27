@@ -92,8 +92,8 @@ app.use('/api/login', authLimiter);
 app.use('/api', authRoutes);
 app.use('/api', courseRoutes);
 app.use('/api/schedule', scheduleRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/recommendations', courseRecommendationRoutes);
+// app.use('/api/ai', aiRoutes);
+// app.use('/api/recommendations', courseRecommendationRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
