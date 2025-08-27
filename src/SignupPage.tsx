@@ -20,20 +20,12 @@ const SignupPage = ({ onNavigate }: Props) => {
     
     try {
       const data = await signup(email, password, firstName, lastName);
-      console.log('Signup response data:', data);
       
       // Store user data in localStorage (but not the token - that's in httpOnly cookie)
       localStorage.setItem('userEmail', data.user.email);
       localStorage.setItem('userId', data.user.id.toString());
       localStorage.setItem('userFirstName', data.user.firstName);
       localStorage.setItem('userLastName', data.user.lastName);
-      
-      console.log('Stored user data:', {
-        email: data.user.email,
-        id: data.user.id,
-        firstName: data.user.firstName,
-        lastName: data.user.lastName
-      });
       
       onNavigate('home');
     } catch (err: any) {

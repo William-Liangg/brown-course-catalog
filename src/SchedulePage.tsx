@@ -149,10 +149,9 @@ const SchedulePage = ({ onNavigate }: Props) => {
       setError('');
       
       // Check if user is logged in
-      const token = localStorage.getItem('token');
       const userId = localStorage.getItem('userId');
       
-      if (!token || !userId) {
+      if (!userId) {
         setError('Please log in to view your schedule');
         setSchedule([]);
         setLoading(false);
@@ -162,7 +161,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
       const data = await getSchedule();
       setSchedule(data.schedule);
     } catch (err: any) {
-      if (err.message.includes('401') || err.message.includes('No token provided')) {
+      if (err.message.includes('401') || err.message.includes('No authentication token provided')) {
         setError('Please log in to view your schedule');
         setSchedule([]);
         // Redirect to login if not authenticated
@@ -188,7 +187,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
         setSelectedCourse(null);
       }
     } catch (err: any) {
-      if (err.message.includes('401') || err.message.includes('No token provided')) {
+      if (err.message.includes('401') || err.message.includes('No authentication token provided')) {
         setError('Please log in to manage your schedule');
         setTimeout(() => onNavigate('login'), 2000);
       } else {

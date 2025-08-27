@@ -86,13 +86,12 @@ const App = () => {
   const [showAuthPopup, setShowAuthPopup] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
     const userEmail = localStorage.getItem('userEmail');
     const userId = localStorage.getItem('userId');
     const userFirstName = localStorage.getItem('userFirstName');
     const userLastName = localStorage.getItem('userLastName');
     
-    if (token && userEmail && userId && userFirstName && userLastName) {
+    if (userEmail && userId && userFirstName && userLastName) {
       setIsLoggedIn(true);
       setUser({ 
         id: parseInt(userId), 

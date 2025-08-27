@@ -138,20 +138,20 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
     }
 
     try {
-      console.log('Adding course to schedule:', courseId, 'for term:', selectedTerm);
+
       setAddingCourse(courseId);
       setAddError('');
       setConflictError(null);
       
       const data = await addToSchedule(courseId, selectedTerm);
-      console.log('Response data:', data);
+
       
       setShowSuccess(true);
       setSuccessMessage('Course added to schedule successfully!');
       setTimeout(() => setShowSuccess(false), 3000);
       
     } catch (err: any) {
-      console.log('Error adding course:', err);
+
       
       if (err.message.includes('Time conflict detected')) {
         // Check if conflicts data is available in the error response
@@ -163,7 +163,7 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
         } else {
           setAddError('Time conflict detected with existing courses');
         }
-      } else if (err.message.includes('401') || err.message.includes('No token provided')) {
+      } else if (err.message.includes('401') || err.message.includes('No authentication token provided')) {
         setAddError('Please log in to add courses to your schedule');
         setTimeout(() => onNavigate('login'), 2000);
       } else {
@@ -194,10 +194,7 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
     };
   }, []);
 
-  // Debug: Log when conflictError changes
-  useEffect(() => {
-    console.log('conflictError state changed:', conflictError);
-  }, [conflictError]);
+
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

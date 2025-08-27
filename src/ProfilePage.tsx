@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { User, Lock, Eye, EyeOff, Edit, AlertTriangle } from 'lucide-react';
-import { deleteAccount } from './utils/api';
+import { Eye, EyeOff, User, Shield, Trash2 } from 'lucide-react';
+import { updateNames, changePassword, deleteAccount } from './utils/api';
 
 interface Props {
   onNavigate: (route: string) => void;
@@ -8,6 +8,14 @@ interface Props {
 }
 
 const ProfilePage = ({ onNavigate, onLogout }: Props) => {
+  // User data state
+  const [email, setEmail] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [isEditingNames, setIsEditingNames] = useState(false);
+  const [namesLoading, setNamesLoading] = useState(false);
+
+  // Password change state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -15,33 +23,26 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Delete account state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+
+  // Feedback state
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [userEmail, setUserEmail] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [isEditingNames, setIsEditingNames] = useState(false);
-  const [namesLoading, setNamesLoading] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showDeletePassword, setShowDeletePassword] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Get user data from localStorage when component mounts
   useEffect(() => {
     const email = localStorage.getItem('userEmail');
     const userFirstName = localStorage.getItem('userFirstName');
     const userLastName = localStorage.getItem('userLastName');
-    
-    console.log('ProfilePage: Retrieved user data from localStorage:', { email, userFirstName, userLastName });
-    
-    if (email) {
-      setUserEmail(email);
-    }
-    if (userFirstName) {
+
+    if (email && userFirstName && userLastName) {
+      setEmail(email);
       setFirstName(userFirstName);
-    }
-    if (userLastName) {
       setLastName(userLastName);
     }
   }, []);
@@ -59,33 +60,16 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
     setMessage('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/update-names', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          firstName: firstName.trim(),
-          lastName: lastName.trim()
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage('Names updated successfully!');
-        setIsEditingNames(false);
-        
-        // Update localStorage with new names
-        localStorage.setItem('userFirstName', data.user.firstName);
-        localStorage.setItem('userLastName', data.user.lastName);
-      } else {
-        setError(data.error || 'Failed to update names');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+      const data = await updateNames(firstName.trim(), lastName.trim());
+      
+      setMessage('Names updated successfully!');
+      setIsEditingNames(false);
+      
+      // Update localStorage with new names
+      localStorage.setItem('userFirstName', data.user.firstName);
+      localStorage.setItem('userLastName', data.user.lastName);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update names');
     } finally {
       setNamesLoading(false);
     }
@@ -110,31 +94,14 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
     setMessage('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/change-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          currentPassword,
-          newPassword
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage('Password changed successfully!');
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-      } else {
-        setError(data.error || 'Failed to change password');
-      }
-    } catch (err) {
-      setError('Network error. Please try again.');
+      await changePassword(currentPassword, newPassword);
+      
+      setMessage('Password changed successfully!');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: any) {
+      setError(err.message || 'Failed to change password');
     } finally {
       setLoading(false);
     }
@@ -203,7 +170,7 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
                   Email Address
                 </label>
                 <div className="p-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-900">
-                  {userEmail ? userEmail : 'Loading...'}
+                  {email ? email : 'Loading...'}
                 </div>
               </div>
 
@@ -280,7 +247,7 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
                     onClick={() => setIsEditingNames(true)}
                     className="flex items-center justify-center w-full bg-amber-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-amber-700 transition-colors"
                   >
-                    <Edit className="w-4 h-4 mr-2" />
+                    <Shield className="w-4 h-4 mr-2" />
                     Edit Names
                   </button>
                 )}
@@ -291,7 +258,7 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
           {/* Change Password Card */}
           <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <Lock className="w-6 h-6 mr-3 text-amber-600" />
+              <Shield className="w-6 h-6 mr-3 text-amber-600" />
               Change Password
             </h2>
 
@@ -410,7 +377,7 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
                 onClick={() => setShowDeleteModal(true)}
                 className="w-full bg-red-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-700 transition-colors flex items-center justify-center"
               >
-                <AlertTriangle className="w-5 h-5 mr-2" />
+                <Trash2 className="w-5 h-5 mr-2" />
                 Delete Account
               </button>
             </div>
@@ -423,7 +390,7 @@ const ProfilePage = ({ onNavigate, onLogout }: Props) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-2xl max-w-md mx-4 p-6">
             <div className="flex items-center mb-4">
-              <AlertTriangle className="w-6 h-6 text-red-600 mr-3" />
+              <Shield className="w-6 h-6 text-red-600 mr-3" />
               <h3 className="text-xl font-semibold text-gray-900">Delete Account</h3>
             </div>
             
