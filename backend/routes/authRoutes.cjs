@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { signup, login, logout, getMe, changePassword, updateNames, deleteAccount } = require('../controllers/authController.cjs');
+const authController = require('../controllers/authController.cjs');
 const authMiddleware = require('../middleware/authMiddleware.cjs');
 
 // Basic validation middleware
@@ -33,14 +33,14 @@ const validateLogin = (req, res, next) => {
 };
 
 // Public routes with basic validation
-router.post('/signup', validateSignup, signup);
-router.post('/login', validateLogin, login);
-router.post('/logout', logout);
+router.post('/signup', validateSignup, authController.signup);
+router.post('/login', validateLogin, authController.login);
+router.post('/logout', authController.logout);
 
 // Protected routes
-router.get('/me', authMiddleware, getMe);
-router.post('/change-password', authMiddleware, changePassword);
-router.post('/update-names', authMiddleware, updateNames);
-router.delete('/delete-account', authMiddleware, deleteAccount);
+router.get('/me', authMiddleware, authController.getMe);
+router.post('/change-password', authMiddleware, authController.changePassword);
+router.post('/update-names', authMiddleware, authController.updateNames);
+router.delete('/delete-account', authMiddleware, authController.deleteAccount);
 
 module.exports = router;
