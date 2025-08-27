@@ -206,6 +206,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
       otherCourse.id !== course.id &&
       otherCourse.days === course.days &&
       otherCourse.term === course.term &&
+      course.end_time && course.start_time && otherCourse.start_time && otherCourse.end_time &&
       !(
         course.end_time <= otherCourse.start_time || 
         course.start_time >= otherCourse.end_time

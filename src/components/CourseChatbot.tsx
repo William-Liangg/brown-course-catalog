@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MessageCircle, Send, Bot, User, X, Sparkles } from 'lucide-react';
-import { getCourseRecommendations } from '../utils/api';
+import { getAICourseRecommendations } from '../utils/api';
 
 interface Recommendation {
   courseCode: string;
@@ -45,7 +45,7 @@ const CourseChatbot = () => {
     setIsLoading(true);
 
     try {
-      const response = await getCourseRecommendations(inputValue);
+      const response = await getAICourseRecommendations('', inputValue);
       const botMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'bot',
