@@ -3,13 +3,18 @@ require('dotenv').config();
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : 
+       process.env.DATABASE_URL && process.env.DATABASE_URL.includes('render.com') ? { rejectUnauthorized: false } : false
 });
 
 async function setupDatabase() {
   try {
-    console.log('Connecting to database...');
+    console.log('🔧 Database setup starting...');
+    console.log('📡 Environment:', process.env.NODE_ENV || 'development');
+    console.log('🔗 Database URL:', process.env.DATABASE_URL ? 'Set' : 'Not set');
     
     // Test connection
+    console.log('🔌 Testing database connection...');
     await pool.query('SELECT NOW()');
     console.log('✅ Database connection successful');
     
@@ -77,7 +82,24 @@ async function setupDatabase() {
     console.log('🎉 Database setup completed successfully!');
     
   } catch (error) {
-    console.error('❌ Database setup failed:', error);
+    console.error('❌ Database setup failed:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      hint: error.hint,
+      stack: error.stack
+    });
+    
+    if (error.code === 'ECONNREFUSED') {
+      console.error('🔌 Connection refused - check if database is running and accessible');
+    } else if (error.code === 'ENOTFOUND') {
+      console.error('🌐 Database host not found - check DATABASE_URL');
+    } else if (error.code === '28P01') {
+      console.error('🔑 Authentication failed - check database credentials');
+    } else if (error.code === '3D000') {
+      console.error('🗄️ Database does not exist - create the database first');
+    }
+    
     process.exit(1);
   } finally {
     await pool.end();
