@@ -5,12 +5,21 @@
   "scripts": {
     "dev": "cd frontend && npm run dev",
     "backend": "cd backend && npm run dev",
-    "build": "cd frontend && npm install && npm run build",
+    "build": "cd frontend && npm run build",
     "start": "cd backend && npm start",
-    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
-    "postinstall": "cd frontend && npm install && cd ../backend && npm install"
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
-  "keywords": ["brown", "courses", "catalog", "ai", "recommendations"],
+  "keywords": [
+    "brown",
+    "courses",
+    "catalog",
+    "ai",
+    "recommendations"
+  ],
   "author": "",
-  "license": "ISC"
-} 
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "pg": "^8.16.3"
+  }
+}

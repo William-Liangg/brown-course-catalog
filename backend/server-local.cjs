@@ -3,7 +3,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: '../.env' });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,9 +24,11 @@ const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       'http://localhost:3000',
+      'http://localhost:3001',
       'http://localhost:5173', 
       'http://localhost:5174',
       'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
       'http://127.0.0.1:5173',
       'http://127.0.0.1:5174'
     ];
@@ -55,12 +57,12 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Import Vercel functions
-const coursesHandler = require('./api/courses');
-const signupHandler = require('./api/signup');
-const loginHandler = require('./api/login');
-const meHandler = require('./api/me');
-const logoutHandler = require('./api/logout');
+// Import Vercel functions from the correct location
+const coursesHandler = require('../api/courses');
+const signupHandler = require('../api/signup');
+const loginHandler = require('../api/login');
+const meHandler = require('../api/me');
+const logoutHandler = require('../api/logout');
 
 // Route handlers that wrap Vercel functions
 app.get('/api/courses', async (req, res) => {

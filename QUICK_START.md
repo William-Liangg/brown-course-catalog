@@ -1,8 +1,13 @@
-# 🚀 BrunoTrack Quick Start Guide
+# 🚀 Brown Course Catalog Quick Start Guide
 
-## ⚡ Deploy in 5 Minutes
+## ⚡ Local Development Setup
 
-### 1. Setup Environment
+### 1. Prerequisites
+- Node.js (v18 or higher)
+- npm or yarn
+- PostgreSQL database (local or cloud)
+
+### 2. Setup Environment
 ```bash
 # Copy environment template
 cp env.example .env
@@ -12,55 +17,80 @@ nano .env
 ```
 
 **Required in .env:**
+- `DATABASE_URL` (PostgreSQL connection string)
 - `JWT_SECRET` (generate with: `openssl rand -base64 32`)
-- `OPENAI_API_KEY` (from OpenAI dashboard)
-- `POSTGRES_PASSWORD` (any secure password)
+- `OPENAI_API_KEY` (from OpenAI dashboard, optional for AI features)
+- `NODE_ENV=development`
+- `VITE_API_URL=http://localhost:3000`
 
-### 2. Deploy Locally
+### 3. Install Dependencies & Setup Database
 ```bash
-# Run deployment script
-./deploy.sh
+# Run the setup script (recommended)
+./setup.sh
 ```
 
-### 3. Access Your App
-- 🌐 Frontend: http://localhost
-- 🔧 API: http://localhost/api
-- 📊 Health: http://localhost/health
+**Or manually:**
+```bash
+# Install all dependencies (frontend + backend)
+npm run install-all
 
-## ☁️ Deploy to Cloud (Render - Free)
+# Setup database
+node setup-database.js
+```
+
+### 5. Start Development Servers
+
+**Terminal 1 - Backend:**
+```bash
+# Start backend server
+npm run backend
+# or
+cd backend && npm run dev
+```
+
+**Terminal 2 - Frontend:**
+```bash
+# Start frontend development server
+npm run dev
+# or
+cd frontend && npm run dev
+```
+
+### 6. Access Your App
+- 🌐 Frontend: http://localhost:5173 (or the port shown in terminal)
+- 🔧 API: http://localhost:3000/api
+- 📊 Health: http://localhost:3000/health
+
+## ☁️ Deploy to Vercel
 
 ### 1. Push to GitHub
 ```bash
 git push origin main
 ```
 
-### 2. Render Setup
-1. Go to [render.com](https://render.com)
+### 2. Vercel Setup
+1. Go to [vercel.com](https://vercel.com)
 2. Connect your GitHub repo
-3. Create PostgreSQL database
-4. Create Web Service with Docker
-5. Add environment variables from your .env file
+3. Set environment variables from your .env file
+4. Deploy automatically
 
 ### 3. Your app will be live at:
-`https://your-app-name.onrender.com`
+`https://your-app-name.vercel.app`
 
 ## 🔧 Useful Commands
 
 ```bash
-# View logs
-docker-compose logs -f
+# View backend logs
+cd backend && npm run dev
 
-# Stop services
-docker-compose down
+# View frontend logs
+cd frontend && npm run dev
 
-# Restart services
-docker-compose restart
+# Build for production
+npm run build
 
-# Check status
-docker-compose ps
-
-# Access container
-docker-compose exec app sh
+# Install dependencies
+npm run install-all
 ```
 
 ## 🚨 Troubleshooting
@@ -68,33 +98,46 @@ docker-compose exec app sh
 **Database connection failed?**
 ```bash
 # Check if PostgreSQL is running
-docker-compose ps postgres
+psql -h localhost -U your_username -d your_database
 
-# View database logs
-docker-compose logs postgres
+# Verify DATABASE_URL in .env
+echo $DATABASE_URL
 ```
 
-**App not starting?**
+**Backend not starting?**
 ```bash
-# Check app logs
-docker-compose logs app
+# Check backend logs
+cd backend && npm run dev
 
 # Verify environment variables
-docker-compose exec app env | grep -E "(JWT|OPENAI|DATABASE)"
+cd backend && node -e "console.log(process.env.DATABASE_URL)"
+```
+
+**Frontend not connecting to backend?**
+```bash
+# Check VITE_API_URL in .env
+echo $VITE_API_URL
+
+# Verify backend is running on port 3000
+curl http://localhost:3000/health
 ```
 
 **Port already in use?**
 ```bash
-# Check what's using port 3001
-lsof -i :3001
+# Check what's using port 3000
+lsof -i :3000
 
-# Change port in docker-compose.yml
+# Check what's using port 5173
+lsof -i :5173
+
+# Kill process if needed
+kill -9 <PID>
 ```
 
 ## 📚 Full Documentation
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed instructions for all cloud platforms.
+See [LOCAL_DEVELOPMENT.md](LOCAL_DEVELOPMENT.md) for detailed instructions.
 
 ---
 
-**Need help?** Check the troubleshooting section in DEPLOYMENT.md 
+**Need help?** Check the troubleshooting section above or the backend README 

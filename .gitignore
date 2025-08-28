@@ -51,10 +51,6 @@ backend/fix_sql.js
 .env
 backend/.env
 
-# Docker files (optional - uncomment if you don't want to track these)
-# docker-compose.override.yml
-# .dockerignore
-
 # Production builds
 dist/
 build/
