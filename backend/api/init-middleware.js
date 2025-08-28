@@ -1,7 +1,7 @@
-import Cors from 'cors';
+const Cors = require('cors');
 
 // Helper to wrap middleware for async/await usage
-export default function initMiddleware(middleware) {
+function initMiddleware(middleware) {
   return (req, res) =>
     new Promise((resolve, reject) => {
       middleware(req, res, (result) => {
@@ -20,4 +20,4 @@ const cors = initMiddleware(
   })
 );
 
-export { cors }; 
+module.exports = { initMiddleware, cors }; 

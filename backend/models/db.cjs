@@ -1,4 +1,5 @@
-const { Pool } = require('pg');
+import pkg from 'pg';
+const { Pool } = pkg;
 
 // Use SSL for cloud DBs (Render, Supabase, Neon)
 const pool = new Pool({
@@ -6,4 +7,4 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
-module.exports = pool;
+export default pool;

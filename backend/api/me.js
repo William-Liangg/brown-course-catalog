@@ -1,7 +1,7 @@
-import jwt from 'jsonwebtoken';
-import Cors from 'cors';
-import initMiddleware from './init-middleware.js';
-import pool from '../models/db.js';
+const jwt = require('jsonwebtoken');
+const Cors = require('cors');
+const { initMiddleware } = require('./init-middleware.js');
+const pool = require('../models/db.js');
 
 // Initialize CORS middleware
 const cors = initMiddleware(
@@ -12,7 +12,7 @@ const cors = initMiddleware(
   })
 );
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Run CORS
   await cors(req, res);
 
