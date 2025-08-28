@@ -4,7 +4,7 @@ services:
     name: brown-course-catalog-backend
     env: node
     plan: free
-    buildCommand: cd backend && npm install && npm run setup-db
+    buildCommand: cd backend && npm install
     startCommand: cd backend && npm start
     envVars:
       - key: NODE_ENV
@@ -25,4 +25,4 @@ services:
     staticPublishPath: frontend/build
     envVars:
       - key: VITE_API_URL
-        value: https://brown-course-catalog.onrender.com 
+        value: https://brown-course-catalog-backend.onrender.com 

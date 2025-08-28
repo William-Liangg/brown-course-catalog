@@ -187,22 +187,44 @@ const testDatabaseConnection = async () => {
     if (isConnected) {
       console.log('✅ Database connection successful');
       
-      // Test if courses table exists
-      try {
-        const result = await db.query('SELECT COUNT(*) FROM courses');
-        console.log(`📊 Courses table exists with ${result.rows[0].count} courses`);
-      } catch (tableError) {
-        if (tableError.code === '42P01') {
-          console.warn('⚠️  Courses table does not exist - database setup may be needed');
+      // Test all tables
+      console.log('📊 Testing database tables...');
+      const tableStatus = await db.testTables();
+      
+      // Log table status
+      Object.entries(tableStatus).forEach(([table, status]) => {
+        if (status.exists) {
+          console.log(`✅ ${table} table: ${status.count} rows`);
         } else {
-          console.error('❌ Error checking courses table:', tableError.message);
+          console.warn(`⚠️  ${table} table: ${status.error}`);
         }
+      });
+      
+      // Check for critical issues
+      const missingTables = Object.entries(tableStatus)
+        .filter(([table, status]) => !status.exists)
+        .map(([table]) => table);
+      
+      if (missingTables.length > 0) {
+        console.error('❌ Critical: Missing tables:', missingTables);
+        console.log('💡 Run database setup: npm run setup-db');
       }
+      
+      // Log database status
+      const dbStatus = db.getStatus();
+      console.log('📊 Database pool status:', dbStatus);
+      
     } else {
       console.error('❌ Database connection test failed');
+      console.log('💡 Check your DATABASE_URL and ensure the database is running');
     }
   } catch (error) {
-    console.error('❌ Database connection failed:', error.message);
+    console.error('❌ Database connection failed:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      hint: error.hint
+    });
     console.log('💡 Make sure to run: npm run setup-db');
   }
 };
