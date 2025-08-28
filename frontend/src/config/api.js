@@ -1,5 +1,9 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
+// Debug logging
+console.log('Environment VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('Using API_BASE_URL:', API_BASE_URL);
+
 export const API_CONFIG = {
   baseURL: API_BASE_URL,
   endpoints: {

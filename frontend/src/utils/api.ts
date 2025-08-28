@@ -1,4 +1,5 @@
 // Utility functions for making authenticated API calls
+import { API_CONFIG } from '../config/api';
 
 export const getAuthHeaders = () => {
   return {
@@ -7,7 +8,7 @@ export const getAuthHeaders = () => {
 };
 
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
-  const url = `/api${endpoint}`;
+  const url = `${API_CONFIG.baseURL}${endpoint}`;
   const headers = getAuthHeaders();
   
   const response = await fetch(url, {
