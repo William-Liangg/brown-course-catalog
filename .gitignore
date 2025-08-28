@@ -58,3 +58,4 @@ backend/.env
 # Production builds
 dist/
 build/
+.vercel

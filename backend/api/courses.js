@@ -15,19 +15,24 @@ module.exports = async (req, res) => {
     'http://localhost:5174',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174'
+    'http://127.0.0.1:5174',
+    // Vercel deployment domains
+    'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app',
+    'https://brown-course-catalog-ggs2cd5o1-wills-projects-5cfc44e3.vercel.app',
+    'https://brown-course-catalog-odp1z3ttw-wills-projects-5cfc44e3.vercel.app'
   ];
   
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5174');
+    // Default to the main Vercel domain
+    res.setHeader('Access-Control-Allow-Origin', 'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app');
   }
   
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -39,19 +44,17 @@ module.exports = async (req, res) => {
     
     const result = await query('SELECT * FROM courses ORDER BY code');
     
-    console.log('✅ Courses query successful:', { 
-      rowCount: result.rows.length, 
-      firstCourse: result.rows[0]?.code || 'none' 
+    console.log('✅ Courses query successful:', {
+      rowCount: result.rows.length,
+      firstCourse: result.rows[0]?.code || 'none'
     });
-
-    // Return just the rows array, not the full PostgreSQL result object
+    
     res.status(200).json({ courses: result.rows });
   } catch (error) {
     console.error('❌ Courses query failed:', error);
     res.status(500).json({ 
       error: 'Failed to fetch courses',
-      message: 'An unexpected error occurred while fetching courses',
-      code: 'INTERNAL_ERROR'
+      details: error.message 
     });
   }
 }; 
