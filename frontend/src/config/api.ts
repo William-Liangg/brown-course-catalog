@@ -33,7 +33,9 @@ export const API_CONFIG = {
 };
 
 export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
-  const url = `${API_BASE_URL}${endpoint}`;
+  // Fix: Add /api prefix for production, not for local development
+  const baseURL = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL : 'http://localhost:3001';
+  const url = `${baseURL}${endpoint}`;
   console.log('🌐 Making API request to:', url);
   
   const config: RequestInit = {

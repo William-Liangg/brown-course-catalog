@@ -1,5 +1,5 @@
 // Load environment variables
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: process.env.NODE_ENV === 'production' ? '.env' : '.env.local' });
 
 const express = require('express');
 const cors = require('cors');
@@ -55,18 +55,20 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// CORS Configuration
-app.use(cors(config.cors));
-
-// Manual CORS backup middleware for maximum compatibility
+// CORS Configuration - Manual middleware for better control
 app.use((req, res, next) => {
   const allowedOrigins = process.env.NODE_ENV === 'production' 
     ? ['https://brown-course-catalog-frontend.onrender.com']
     : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:5174', 'http://127.0.0.1:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'];
   
   const origin = req.headers.origin;
+  console.log('🌐 CORS Request:', { origin, method: req.method, url: req.url, allowedOrigins });
+  
   if (allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
+    console.log('✅ CORS: Origin allowed');
+  } else {
+    console.log('❌ CORS: Origin not allowed');
   }
   
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -74,6 +76,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   
   if (req.method === 'OPTIONS') {
+    console.log('🔄 CORS: Handling OPTIONS preflight');
     res.sendStatus(200);
   } else {
     next();

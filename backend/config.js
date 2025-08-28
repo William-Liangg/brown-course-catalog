@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '.env.local' });
+require('dotenv').config({ path: process.env.NODE_ENV === 'production' ? '.env' : '.env.local' });
 
 const config = {
   // Server configuration
