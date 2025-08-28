@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
 const config = {
   // Server configuration
@@ -15,22 +15,12 @@ const config = {
   
   // CORS configuration
   cors: {
-    origins: process.env.NODE_ENV === 'production' 
-      ? [
-          'https://brown-course-catalog-frontend.onrender.com',
-          'https://bruno-track.onrender.com'
-        ]
-      : [
-          'http://localhost:3000',
-          'http://localhost:5173',
-          'http://localhost:5174',
-          'http://127.0.0.1:3000',
-          'http://127.0.0.1:5173',
-          'http://127.0.0.1:5174'
-        ],
+    origin: process.env.NODE_ENV === 'production' 
+      ? "https://brown-course-catalog-frontend.onrender.com"
+      : ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:3000", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
     exposedHeaders: ['Set-Cookie'],
     maxAge: 86400 // 24 hours
   },

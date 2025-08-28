@@ -8,7 +8,7 @@ export const getAuthHeaders = () => {
 };
 
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
-  const url = `${API_CONFIG.baseURL}${endpoint}`;
+  const url = `${API_CONFIG.baseURL}/api${endpoint}`;
   const headers = getAuthHeaders();
   
   const response = await fetch(url, {
