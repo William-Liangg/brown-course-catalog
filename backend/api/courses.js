@@ -1,57 +1,70 @@
 const { query } = require('../models/db.cjs');
+const { initCors } = require('./init-middleware.js');
 
 module.exports = async (req, res) => {
+  // Initialize CORS
+  await initCors(req, res);
+
+  // Log request details
   console.log('📚 API: /api/courses - Request received', {
     method: req.method,
+    url: req.url,
     query: req.query,
-    userAgent: req.headers['user-agent'],
-    origin: req.headers.origin
+    headers: {
+      'user-agent': req.headers['user-agent'],
+      'origin': req.headers.origin,
+      'content-type': req.headers['content-type']
+    },
+    timestamp: new Date().toISOString()
   });
 
-  // Set CORS headers - handle credentials mode properly
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174',
-    // Vercel deployment domains
-    'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app',
-    'https://brown-course-catalog-ggs2cd5o1-wills-projects-5cfc44e3.vercel.app',
-    'https://brown-course-catalog-odp1z3ttw-wills-projects-5cfc44e3.vercel.app'
-  ];
-  
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    // Default to the main Vercel domain
-    res.setHeader('Access-Control-Allow-Origin', 'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app');
-  }
-  
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-
+  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
+    console.log('✅ CORS preflight request handled');
     res.status(200).end();
     return;
   }
 
+  // Only allow GET requests
+  if (req.method !== 'GET') {
+    console.log('❌ Method not allowed:', req.method);
+    return res.status(405).json({ 
+      error: 'Method not allowed',
+      details: 'Only GET requests are allowed for /api/courses'
+    });
+  }
+
   try {
-    console.log('🔍 Executing courses query:', { query: 'SELECT * FROM courses ORDER BY code', params: [] });
+    console.log('🔍 Executing courses query:', { 
+      query: 'SELECT * FROM courses ORDER BY code', 
+      params: [],
+      timestamp: new Date().toISOString()
+    });
     
     const result = await query('SELECT * FROM courses ORDER BY code');
     
     console.log('✅ Courses query successful:', {
       rowCount: result.rows.length,
-      firstCourse: result.rows[0]?.code || 'none'
+      firstCourse: result.rows[0]?.code || 'none',
+      duration: 'completed',
+      timestamp: new Date().toISOString()
+    });
+    
+    // Log response details
+    console.log('📤 Sending response:', {
+      status: 200,
+      rowCount: result.rows.length,
+      timestamp: new Date().toISOString()
     });
     
     res.status(200).json({ courses: result.rows });
   } catch (error) {
-    console.error('❌ Courses query failed:', error);
+    console.error('❌ Courses query failed:', {
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
     res.status(500).json({ 
       error: 'Failed to fetch courses',
       details: error.message 

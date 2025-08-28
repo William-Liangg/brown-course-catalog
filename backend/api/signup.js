@@ -1,54 +1,51 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { query } = require('../models/db.cjs');
+const { initCors } = require('./init-middleware.js');
 
 module.exports = async (req, res) => {
+  // Initialize CORS
+  await initCors(req, res);
+
+  // Log request details
   console.log('📝 API: /api/signup - Request received', {
     method: req.method,
+    url: req.url,
     body: req.body,
-    userAgent: req.headers['user-agent'],
-    origin: req.headers.origin
+    headers: {
+      'user-agent': req.headers['user-agent'],
+      'origin': req.headers.origin,
+      'content-type': req.headers['content-type']
+    },
+    timestamp: new Date().toISOString()
   });
 
-  // Set CORS headers - handle credentials mode properly
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174',
-    // Vercel deployment domains
-    'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app',
-    'https://brown-course-catalog-ggs2cd5o1-wills-projects-5cfc44e3.vercel.app',
-    'https://brown-course-catalog-odp1z3ttw-wills-projects-5cfc44e3.vercel.app'
-  ];
-  
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    // Default to the main Vercel domain
-    res.setHeader('Access-Control-Allow-Origin', 'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app');
-  }
-  
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-
+  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
+    console.log('✅ CORS preflight request handled');
     res.status(200).end();
     return;
   }
 
+  // Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    console.log('❌ Method not allowed:', req.method);
+    return res.status(405).json({ 
+      error: 'Method not allowed',
+      details: 'Only POST requests are allowed for /api/signup'
+    });
   }
 
   try {
     const { email, password, name } = req.body;
 
+    // Validate required fields
     if (!email || !password || !name) {
+      console.log('❌ Missing required fields:', { 
+        hasEmail: !!email, 
+        hasPassword: !!password, 
+        hasName: !!name 
+      });
       return res.status(400).json({ 
         error: 'Missing required fields',
         details: 'Email, password, and name are required'
@@ -103,6 +100,13 @@ module.exports = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     });
 
+    // Log response details
+    console.log('📤 Sending signup response:', {
+      status: 201,
+      userId: user.id,
+      timestamp: new Date().toISOString()
+    });
+
     res.status(201).json({
       message: 'User created successfully',
       user: {
@@ -113,7 +117,12 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Signup failed:', error);
+    console.error('❌ Signup failed:', {
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
+    
     res.status(500).json({ 
       error: 'Failed to create user',
       details: error.message 

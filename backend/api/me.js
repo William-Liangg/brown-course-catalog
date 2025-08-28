@@ -1,47 +1,38 @@
 const jwt = require('jsonwebtoken');
 const { query } = require('../models/db.cjs');
+const { initCors } = require('./init-middleware.js');
 
 module.exports = async (req, res) => {
+  // Initialize CORS
+  await initCors(req, res);
+
+  // Log request details
   console.log('👤 API: /api/me - Request received', {
     method: req.method,
+    url: req.url,
     cookies: req.cookies,
-    userAgent: req.headers['user-agent'],
-    origin: req.headers.origin
+    headers: {
+      'user-agent': req.headers['user-agent'],
+      'origin': req.headers.origin,
+      'content-type': req.headers['content-type']
+    },
+    timestamp: new Date().toISOString()
   });
 
-  // Set CORS headers - handle credentials mode properly
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:5173',
-    'http://localhost:5174',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174',
-    // Vercel deployment domains
-    'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app',
-    'https://brown-course-catalog-ggs2cd5o1-wills-projects-5cfc44e3.vercel.app',
-    'https://brown-course-catalog-odp1z3ttw-wills-projects-5cfc44e3.vercel.app'
-  ];
-  
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    // Default to the main Vercel domain
-    res.setHeader('Access-Control-Allow-Origin', 'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app');
-  }
-  
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-
+  // Handle preflight OPTIONS request
   if (req.method === 'OPTIONS') {
+    console.log('✅ CORS preflight request handled');
     res.status(200).end();
     return;
   }
 
+  // Only allow GET requests
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    console.log('❌ Method not allowed:', req.method);
+    return res.status(405).json({ 
+      error: 'Method not allowed',
+      details: 'Only GET requests are allowed for /api/me'
+    });
   }
 
   try {
@@ -78,6 +69,13 @@ module.exports = async (req, res) => {
 
     console.log('✅ User data retrieved:', { userId: user.id, email: user.email });
 
+    // Log response details
+    console.log('📤 Sending user data response:', {
+      status: 200,
+      userId: user.id,
+      timestamp: new Date().toISOString()
+    });
+
     res.status(200).json({
       user: {
         id: user.id,
@@ -87,7 +85,11 @@ module.exports = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ /api/me failed:', error);
+    console.error('❌ /api/me failed:', {
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    });
     
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
