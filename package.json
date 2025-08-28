@@ -6,7 +6,8 @@
     "dev": "cd frontend && npm run dev",
     "build": "cd frontend && npm install && npm run build",
     "start": "cd backend && npm start",
-    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+    "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "postinstall": "cd frontend && npm install && cd ../backend && npm install"
   },
   "keywords": ["brown", "courses", "catalog", "ai", "recommendations"],
   "author": "",
