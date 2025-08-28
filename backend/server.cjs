@@ -69,13 +69,17 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   
-  // Handle origin
+  // Handle origin - be more permissive in development
   if (origin && allowedOrigins.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     console.log('✅ CORS: Origin allowed:', origin);
   } else if (!origin) {
     // No origin header (direct API call), allow it
     console.log('🌐 CORS: No origin header (direct API call)');
+  } else if (process.env.NODE_ENV !== 'production') {
+    // In development, allow any origin for easier testing
+    res.header('Access-Control-Allow-Origin', origin);
+    console.log('🔧 CORS: Development mode - allowing origin:', origin);
   } else {
     console.log('❌ CORS: Origin not allowed:', origin);
   }
