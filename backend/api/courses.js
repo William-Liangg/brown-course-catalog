@@ -8,10 +8,26 @@ module.exports = async (req, res) => {
     origin: req.headers.origin
   });
 
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Set CORS headers - handle credentials mode properly
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5174');
+  }
+  
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -28,6 +44,7 @@ module.exports = async (req, res) => {
       firstCourse: result.rows[0]?.code || 'none' 
     });
 
+    // Return just the rows array, not the full PostgreSQL result object
     res.status(200).json({ courses: result.rows });
   } catch (error) {
     console.error('❌ Courses query failed:', error);
