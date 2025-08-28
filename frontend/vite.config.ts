@@ -12,4 +12,8 @@ export default defineConfig({
       '/api': 'http://localhost:3001',
     },
   },
+  define: {
+    // Ensure environment variables are available at build time
+    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'https://brown-course-catalog.onrender.com')
+  }
 })
