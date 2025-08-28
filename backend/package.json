@@ -1,6 +1,7 @@
 {
   "name": "brown-course-catalog-api",
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
     "start": "node server-local.cjs",
     "dev": "node server-local.cjs",

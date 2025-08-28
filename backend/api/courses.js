@@ -1,73 +1,32 @@
-const { query } = require('../models/db.cjs');
-const { initCors } = require('./init-middleware.js');
+import Cors from 'cors';
+import initMiddleware from './init-middleware.js';
+import pool from '../models/db.js';
 
-module.exports = async (req, res) => {
-  // Initialize CORS
-  await initCors(req, res);
+// Initialize CORS middleware
+const cors = initMiddleware(
+  Cors({
+    origin: 'https://brown-course-catalog.vercel.app', // your frontend URL
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
+  })
+);
 
-  // Log request details
-  console.log('📚 API: /api/courses - Request received', {
-    method: req.method,
-    url: req.url,
-    query: req.query,
-    headers: {
-      'user-agent': req.headers['user-agent'],
-      'origin': req.headers.origin,
-      'content-type': req.headers['content-type']
-    },
-    timestamp: new Date().toISOString()
-  });
+export default async function handler(req, res) {
+  // Run CORS
+  await cors(req, res);
 
-  // Handle preflight OPTIONS request
+  // Handle preflight
   if (req.method === 'OPTIONS') {
-    console.log('✅ CORS preflight request handled');
-    res.status(200).end();
-    return;
-  }
-
-  // Only allow GET requests
-  if (req.method !== 'GET') {
-    console.log('❌ Method not allowed:', req.method);
-    return res.status(405).json({ 
-      error: 'Method not allowed',
-      details: 'Only GET requests are allowed for /api/courses'
-    });
+    return res.status(200).end();
   }
 
   try {
-    console.log('🔍 Executing courses query:', { 
-      query: 'SELECT * FROM courses ORDER BY code', 
-      params: [],
-      timestamp: new Date().toISOString()
-    });
-    
-    const result = await query('SELECT * FROM courses ORDER BY code');
-    
-    console.log('✅ Courses query successful:', {
-      rowCount: result.rows.length,
-      firstCourse: result.rows[0]?.code || 'none',
-      duration: 'completed',
-      timestamp: new Date().toISOString()
-    });
-    
-    // Log response details
-    console.log('📤 Sending response:', {
-      status: 200,
-      rowCount: result.rows.length,
-      timestamp: new Date().toISOString()
-    });
-    
+    console.log(`[API] ${req.method} /api/courses`);
+    const result = await pool.query('SELECT * FROM courses ORDER BY code');
+    console.log(`[DB] Retrieved ${result.rowCount} courses`);
     res.status(200).json({ courses: result.rows });
-  } catch (error) {
-    console.error('❌ Courses query failed:', {
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-    
-    res.status(500).json({ 
-      error: 'Failed to fetch courses',
-      details: error.message 
-    });
+  } catch (err) {
+    console.error('[ERROR] /api/courses', err);
+    res.status(500).json({ error: err.message });
   }
-}; 
+} 

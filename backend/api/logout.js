@@ -1,41 +1,25 @@
-const { initCors } = require('./init-middleware.js');
+import Cors from 'cors';
+import initMiddleware from './init-middleware.js';
 
-module.exports = async (req, res) => {
-  // Initialize CORS
-  await initCors(req, res);
+// Initialize CORS middleware
+const cors = initMiddleware(
+  Cors({
+    origin: 'https://brown-course-catalog.vercel.app', // your frontend URL
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
+  })
+);
 
-  // Log request details
-  console.log('🚪 API: /api/logout - Request received', {
-    method: req.method,
-    url: req.url,
-    cookies: req.cookies,
-    headers: {
-      'user-agent': req.headers['user-agent'],
-      'origin': req.headers.origin,
-      'content-type': req.headers['content-type']
-    },
-    timestamp: new Date().toISOString()
-  });
+export default async function handler(req, res) {
+  // Run CORS
+  await cors(req, res);
 
-  // Handle preflight OPTIONS request
+  // Handle preflight
   if (req.method === 'OPTIONS') {
-    console.log('✅ CORS preflight request handled');
-    res.status(200).end();
-    return;
-  }
-
-  // Only allow POST requests
-  if (req.method !== 'POST') {
-    console.log('❌ Method not allowed:', req.method);
-    return res.status(405).json({ 
-      error: 'Method not allowed',
-      details: 'Only POST requests are allowed for /api/logout'
-    });
+    return res.status(200).end();
   }
 
   try {
-    console.log('🧹 Clearing authentication cookie');
-
     // Clear the authentication cookie
     res.clearCookie('token', {
       httpOnly: true,
@@ -43,28 +27,12 @@ module.exports = async (req, res) => {
       sameSite: 'strict'
     });
 
-    console.log('✅ Logout successful - cookie cleared');
-
-    // Log response details
-    console.log('📤 Sending logout response:', {
-      status: 200,
-      timestamp: new Date().toISOString()
-    });
-
     res.status(200).json({
       message: 'Logout successful'
     });
 
-  } catch (error) {
-    console.error('❌ Logout failed:', {
-      error: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-    
-    res.status(500).json({ 
-      error: 'Failed to logout',
-      details: error.message 
-    });
+  } catch (err) {
+    console.error('[ERROR] /api/logout', err);
+    res.status(500).json({ error: err.message });
   }
-}; 
+} 
