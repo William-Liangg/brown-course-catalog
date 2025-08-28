@@ -17,15 +17,16 @@ const config = {
   cors: {
     origins: process.env.NODE_ENV === 'production' 
       ? [
-          'https://bruno-track.onrender.com',
           'https://brown-course-catalog-frontend.onrender.com',
-          'https://your-frontend-name.onrender.com' // Replace with actual frontend URL
+          'https://bruno-track.onrender.com'
         ]
       : [
           'http://localhost:3000',
           'http://localhost:5173',
+          'http://localhost:5174',
           'http://127.0.0.1:3000',
-          'http://127.0.0.1:5173'
+          'http://127.0.0.1:5173',
+          'http://127.0.0.1:5174'
         ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

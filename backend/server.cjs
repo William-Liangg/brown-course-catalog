@@ -110,14 +110,57 @@ app.get('/', (req, res) => {
   });
 });
 
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('❌ Global error handler:', {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    userAgent: req.get('User-Agent')
+  });
+  
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: 'An unexpected error occurred',
+    code: 'INTERNAL_ERROR'
+  });
+});
+
+// 404 handler for unmatched routes
+app.use('*', (req, res) => {
+  console.log('❌ 404 - Route not found:', req.originalUrl);
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested resource was not found',
+    code: 'NOT_FOUND'
+  });
+});
+
 const PORT = config.server.port;
 
 // Test database connection on startup
 const testDatabaseConnection = async () => {
   try {
     const db = require('./models/db.cjs');
-    await db.query('SELECT NOW()');
-    console.log('✅ Database connection successful');
+    const isConnected = await db.testConnection();
+    if (isConnected) {
+      console.log('✅ Database connection successful');
+      
+      // Test if courses table exists
+      try {
+        const result = await db.query('SELECT COUNT(*) FROM courses');
+        console.log(`📊 Courses table exists with ${result.rows[0].count} courses`);
+      } catch (tableError) {
+        if (tableError.code === '42P01') {
+          console.warn('⚠️  Courses table does not exist - database setup may be needed');
+        } else {
+          console.error('❌ Error checking courses table:', tableError.message);
+        }
+      }
+    } else {
+      console.error('❌ Database connection test failed');
+    }
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
     console.log('💡 Make sure to run: npm run setup-db');
