@@ -47,7 +47,6 @@ async function setupDatabase() {
         instructor VARCHAR(255),
         capacity INTEGER,
         enrolled INTEGER DEFAULT 0,
-        embedding VECTOR(1536),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
