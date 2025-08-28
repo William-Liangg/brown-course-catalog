@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "functions": {
-    "api/**/*.js": {
-      "runtime": "@vercel/node"
-    }
-  },
   "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
