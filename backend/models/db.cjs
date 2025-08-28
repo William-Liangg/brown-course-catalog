@@ -4,10 +4,10 @@ const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || process.env.DB_URL || 'postgres://localhost:5432/brown_course_catalog',
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  // Add connection timeout and retry settings
-  connectionTimeoutMillis: 10000,
-  idleTimeoutMillis: 30000,
-  max: 20, // Maximum number of clients in the pool
+  // Optimized for serverless - shorter timeouts and smaller pool
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 10000,
+  max: 5, // Smaller pool for serverless functions
 });
 
 // Track connection status
