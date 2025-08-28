@@ -17,15 +17,15 @@ const corsOptions = {
     const allowedOrigins = [
       // Production frontend URL
       'https://brown-course-catalog.vercel.app',
+      // Production backend URL
+      'https://brown-course-catalog-5id04tszq-wills-projects-5cfc44e3.vercel.app/api/courses',
       // Local development URLs
       'http://localhost:3000',
       'http://localhost:5173',
       'http://localhost:5174',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174',
-      // Vercel preview URLs (fallback)
-      'https://brown-course-catalog-*.vercel.app'
+      'http://127.0.0.1:5174'
     ];
     
     // Allow requests with no origin (like mobile apps or curl requests)
@@ -36,13 +36,23 @@ const corsOptions = {
     
     // Check if origin matches any allowed pattern
     const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (allowedOrigin.includes('*')) {
-        // Handle wildcard patterns
-        const pattern = allowedOrigin.replace('*', '.*');
-        return new RegExp(pattern).test(origin);
-      }
       return allowedOrigin === origin;
     });
+    
+    // Special handling for Vercel deployment URLs
+    if (!isAllowed) {
+      // Allow any Vercel deployment URL for the frontend
+      if (origin.includes('brown-course-catalog') && origin.includes('vercel.app')) {
+        console.log('✅ CORS: Vercel deployment origin allowed:', origin);
+        return callback(null, true);
+      }
+      
+      // Allow any Vercel preview deployment URLs
+      if (origin.includes('vercel.app') && origin.includes('wills-projects')) {
+        console.log('✅ CORS: Vercel preview origin allowed:', origin);
+        return callback(null, true);
+      }
+    }
     
     if (isAllowed) {
       console.log('✅ CORS: Origin allowed:', origin);

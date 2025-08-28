@@ -17,7 +17,7 @@ const config = {
   // CORS configuration
   cors: {
     origin: process.env.NODE_ENV === 'production' 
-      ? "https://brown-course-catalog-frontend.onrender.com"
+      ? "https://brown-course-catalog.vercel.app"
       : ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:3000", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
