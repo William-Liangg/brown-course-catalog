@@ -1,9 +1,5 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-// Debug logging
-console.log('Environment VITE_API_URL:', import.meta.env.VITE_API_URL);
-console.log('Using API_BASE_URL:', API_BASE_URL);
-
 export const API_CONFIG = {
   baseURL: API_BASE_URL,
   endpoints: {
@@ -29,13 +25,13 @@ export const API_CONFIG = {
   }
 };
 
-export const apiRequest = async (endpoint, options = {}) => {
+export const apiRequest = async (endpoint: string, options: RequestInit = {}) => {
   const url = `${API_BASE_URL}${endpoint}`;
-  const config = {
+  const config: RequestInit = {
     credentials: 'include', // Important for cookies
     headers: {
       'Content-Type': 'application/json',
-      ...options.headers
+      ...(options.headers as Record<string, string>)
     },
     ...options
   };

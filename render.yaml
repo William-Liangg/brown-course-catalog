@@ -16,13 +16,13 @@ services:
       - key: OPENAI_API_KEY
         sync: false
 
-  # Frontend Web Service
+  # Frontend Static Site
   - type: web
     name: brown-course-catalog-frontend
-    env: node
+    env: static
     plan: free
     buildCommand: cd frontend && npm install && npm run build
-    startCommand: cd frontend && npx serve -s build -l $PORT
+    staticPublishPath: frontend/build
     envVars:
       - key: VITE_API_URL
         value: https://brown-course-catalog.onrender.com 
