@@ -4,7 +4,7 @@
   "description": "Brown University Course Catalog with AI recommendations",
   "scripts": {
     "dev": "cd frontend && npm run dev",
-    "build": "cd frontend && npm run build",
+    "build": "cd frontend && npm install && npm run build",
     "start": "cd backend && npm start",
     "install-all": "npm install && cd frontend && npm install && cd ../backend && npm install"
   },
