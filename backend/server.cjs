@@ -15,6 +15,7 @@ const courseRoutes = require('./routes/courseRoutes.cjs');
 const scheduleRoutes = require('./routes/scheduleRoutes.cjs');
 const aiRoutes = require('./routes/aiRoutes');
 const courseRecommendationRoutes = require('./routes/courseRecommendationRoutes');
+const adminRoutes = require('./routes/adminRoutes.cjs');
 
 // Validate configuration
 try {
@@ -117,6 +118,7 @@ app.use('/api', courseRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/recommendations', courseRecommendationRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
