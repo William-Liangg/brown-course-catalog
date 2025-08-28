@@ -21,14 +21,14 @@ module.exports = async (req, res) => {
   try {
     console.log('🔍 Executing courses query:', { query: 'SELECT * FROM courses ORDER BY code', params: [] });
     
-    const courses = await query('SELECT * FROM courses ORDER BY code');
+    const result = await query('SELECT * FROM courses ORDER BY code');
     
     console.log('✅ Courses query successful:', { 
-      rowCount: courses.length, 
-      firstCourse: courses[0]?.code || 'none' 
+      rowCount: result.rows.length, 
+      firstCourse: result.rows[0]?.code || 'none' 
     });
 
-    res.status(200).json({ courses });
+    res.status(200).json({ courses: result.rows });
   } catch (error) {
     console.error('❌ Courses query failed:', error);
     res.status(500).json({ 
