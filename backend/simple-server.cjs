@@ -33,7 +33,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // CORS middleware to allow cross-origin requests from frontend
-const FRONTEND_URL = "https://brown-course-catalog-frontend.onrender.com";
+const FRONTEND_URL = "https://brown-course-catalog.onrender.com";
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", FRONTEND_URL);
