@@ -15,15 +15,12 @@ export const getAuthHeaders = () => {
 };
 
 export const apiCall = async (endpoint: string, options: RequestInit = {}) => {
-  // For production, use relative URLs (same domain)
-  // For development, use the full API URL
-  const isProduction = import.meta.env.PROD;
-  const baseURL = isProduction ? '' : API_CONFIG.baseURL;
+  // Use the centralized API configuration
+  const baseURL = API_CONFIG.baseURL;
   const url = `${baseURL}/api${endpoint}`;
   
   console.log('🔧 API Call Debug:', {
     endpoint,
-    isProduction,
     baseURL,
     fullURL: url,
     API_CONFIG: API_CONFIG
