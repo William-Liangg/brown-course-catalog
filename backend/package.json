@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "node simple-server.cjs",
+    "build": "echo 'Backend build complete'",
     "start": "node simple-server.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
