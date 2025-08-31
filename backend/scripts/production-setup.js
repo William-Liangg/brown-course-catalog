@@ -75,20 +75,38 @@ async function setupDatabase() {
       const courseDataPath = path.join(__dirname, '../sql/brown_university_courses.sql');
       const courseData = fs.readFileSync(courseDataPath, 'utf8');
       
-      // Split the SQL file into individual statements
+      // Split the SQL file into individual statements and filter out problematic ones
       const statements = courseData
         .split(';')
         .map(stmt => stmt.trim())
-        .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'));
+        .filter(stmt => {
+          // Only include INSERT statements and skip problematic ones
+          return stmt.length > 0 && 
+                 !stmt.startsWith('--') && 
+                 stmt.toUpperCase().includes('INSERT INTO COURSES') &&
+                 !stmt.includes('identity') && // Skip statements with identity
+                 !stmt.includes('AUTOINCREMENT'); // Skip SQLite syntax
+        });
+      
+      console.log(`📝 Found ${statements.length} valid INSERT statements`);
       
       // Execute each statement
+      let successCount = 0;
       for (const statement of statements) {
         if (statement.trim()) {
-          await client.query(statement);
+          try {
+            await client.query(statement);
+            successCount++;
+            if (successCount % 100 === 0) {
+              console.log(`✅ Processed ${successCount}/${statements.length} statements`);
+            }
+          } catch (error) {
+            console.log(`⚠️  Skipping problematic statement: ${error.message.substring(0, 100)}...`);
+          }
         }
       }
       
-      console.log('✅ Course data loaded successfully');
+      console.log(`✅ Successfully loaded ${successCount} course records`);
     } else {
       console.log('ℹ️  Courses table already contains data, skipping...');
     }
