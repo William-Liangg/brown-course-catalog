@@ -40,4 +40,6 @@ backend/scripts/export_courses_to_sql.js
 
 # Environment variables - keep API keys secure
 .env
+.env.local
 backend/.env
+backend/.env.local
