@@ -143,7 +143,7 @@ const CoursesPage = ({ onNavigate, conflictError, setConflictError, isLoggedIn }
       setAddError('');
       setConflictError(null);
       
-      const data = await addToSchedule(courseId, selectedTerm);
+      await addToSchedule(courseId, selectedTerm);
 
       
       setShowSuccess(true);

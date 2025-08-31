@@ -206,6 +206,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
       otherCourse.id !== course.id &&
       otherCourse.days === course.days &&
       otherCourse.schedule_term === course.schedule_term &&
+      course.start_time && course.end_time && otherCourse.start_time && otherCourse.end_time &&
       !(
         course.end_time <= otherCourse.start_time || 
         course.start_time >= otherCourse.end_time
@@ -436,7 +437,7 @@ const SchedulePage = ({ onNavigate }: Props) => {
                 {/* Course Grid Cells */}
                 {days.map(day => {
                   // Find all courses for this day
-                  const dayCourses = filteredSchedule.filter(course => dayMatches(course.days, day));
+                  const dayCourses = filteredSchedule.filter(course => course.days && dayMatches(course.days, day));
                   
                   return dayCourses.map(course => {
                     if (!course.start_time || !course.end_time) return null;

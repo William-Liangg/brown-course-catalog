@@ -82,7 +82,7 @@ const ProfilePage = ({ onNavigate, onLogout, onUserUpdate }: Props) => {
     setMessage('');
 
     try {
-      const data = await updateNames(firstName.trim(), lastName.trim());
+      await updateNames(firstName.trim(), lastName.trim());
       
       setMessage('Names updated successfully!');
       setIsEditingNames(false);

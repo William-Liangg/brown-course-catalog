@@ -2,7 +2,18 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-require('dotenv').config({ path: '../env.local' });
+
+// Production environment detection
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Load environment variables
+if (isProduction) {
+  // In production, environment variables are set by Render
+  console.log('🚀 Production server starting...');
+} else {
+  // In development, load from env.local
+  require('dotenv').config({ path: '../env.local' });
+}
 
 // Import database connection
 const { Pool } = require('pg');
@@ -12,7 +23,7 @@ const aiRoutes = require('./routes/aiRoutes.cjs');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: false // No SSL for local development
+  ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
 const app = express();
@@ -43,7 +54,11 @@ const authenticateToken = async (req, res, next) => {
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
 });
 
 // Get all courses
@@ -593,13 +608,23 @@ app.get('/api/test', (req, res) => {
   res.json({ 
     message: 'Backend API is working!',
     timestamp: new Date().toISOString(),
-    environment: 'local development'
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Production error handling middleware
+app.use((err, req, res, next) => {
+  console.error('❌ Production error:', err);
+  res.status(500).json({ 
+    error: isProduction ? 'Internal server error' : err.message 
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Local development server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📚 API routes available at /api/`);
-  console.log(`🌍 Environment: local development`);
-  console.log(`🔗 Frontend should connect to: http://localhost:${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  if (!isProduction) {
+    console.log(`🔗 Frontend should connect to: http://localhost:${PORT}`);
+  }
 }); 
