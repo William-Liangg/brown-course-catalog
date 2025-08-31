@@ -24,6 +24,16 @@ services:
       minInstances: 1
       maxInstances: 3
 
+  - type: web
+    name: brown-course-catalog-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://brown-course-catalog-backend.onrender.com
+    autoDeploy: true
+
 databases:
   - name: brown-course-catalog-db
     databaseName: brown_course_catalog
