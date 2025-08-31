@@ -75,38 +75,38 @@ async function setupDatabase() {
       const courseDataPath = path.join(__dirname, '../sql/brown_university_courses.sql');
       const courseData = fs.readFileSync(courseDataPath, 'utf8');
       
-      // Split the SQL file into individual statements and filter out problematic ones
+      // Split the SQL file into individual statements
       const statements = courseData
         .split(';')
         .map(stmt => stmt.trim())
         .filter(stmt => {
-          // Only include INSERT statements and skip problematic ones
-          return stmt.length > 0 && 
-                 !stmt.startsWith('--') && 
-                 stmt.toUpperCase().includes('INSERT INTO COURSES') &&
-                 !stmt.includes('identity') && // Skip statements with identity
-                 !stmt.includes('AUTOINCREMENT'); // Skip SQLite syntax
+          // Only skip comments and empty lines
+          return stmt.length > 0 && !stmt.startsWith('--');
         });
       
-      console.log(`📝 Found ${statements.length} valid INSERT statements`);
+      console.log(`📝 Found ${statements.length} SQL statements to process`);
       
       // Execute each statement
       let successCount = 0;
+      let errorCount = 0;
+      
       for (const statement of statements) {
         if (statement.trim()) {
           try {
             await client.query(statement);
             successCount++;
             if (successCount % 100 === 0) {
-              console.log(`✅ Processed ${successCount}/${statements.length} statements`);
+              console.log(`✅ Processed ${successCount} statements successfully`);
             }
           } catch (error) {
-            console.log(`⚠️  Skipping problematic statement: ${error.message.substring(0, 100)}...`);
+            errorCount++;
+            console.log(`⚠️  Error on statement ${successCount + errorCount}: ${error.message.substring(0, 100)}...`);
+            // Continue processing other statements
           }
         }
       }
       
-      console.log(`✅ Successfully loaded ${successCount} course records`);
+      console.log(`✅ Course seeding complete: ${successCount} successful, ${errorCount} errors`);
     } else {
       console.log('ℹ️  Courses table already contains data, skipping...');
     }
