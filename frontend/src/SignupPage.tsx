@@ -141,16 +141,7 @@ const SignupPage = ({ onNavigate }: Props) => {
                 Sign In
               </button>
             </div>
-            <div>
-              <span className="text-gray-600">Forgot your password? </span>
-              <button 
-                type="button"
-                className="text-amber-900 underline hover:text-amber-800" 
-                onClick={() => onNavigate('login')}
-              >
-                Reset It
-              </button>
-            </div>
+
           </div>
         </form>
       </div>
