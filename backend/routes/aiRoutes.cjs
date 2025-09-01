@@ -121,155 +121,35 @@ const getCoursesByDepartment = async (department) => {
   }
 };
 
-// Subject to Department Mapper (embedded to avoid module import issues)
-const subjectToDepartmentMap = {
-  // Computer Science variations
-  'computer science': 'CSCI', 'comp sci': 'CSCI', 'cs': 'CSCI', 'csci': 'CSCI',
-  'programming': 'CSCI', 'software': 'CSCI', 'coding': 'CSCI', 'algorithms': 'CSCI',
-  'data structures': 'CSCI', 'computer engineering': 'CSCI',
-  
-  // Mathematics variations
-  'math': 'MATH', 'mathematics': 'MATH', 'calculus': 'MATH', 'linear algebra': 'MATH',
-  'statistics': 'MATH', 'stat': 'MATH', 'applied math': 'APMA', 'applied mathematics': 'APMA',
-  'apma': 'APMA',
-  
-  // Economics variations
-  'economics': 'ECON', 'econ': 'ECON', 'finance': 'ECON', 'business': 'ECON',
-  'microeconomics': 'ECON', 'macroeconomics': 'ECON',
-  
-  // Biology variations
-  'biology': 'BIOL', 'bio': 'BIOL', 'life sciences': 'BIOL', 'genetics': 'BIOL',
-  'neuroscience': 'NEUR', 'neur': 'NEUR', 'biochemistry': 'BIOL',
-  
-  // Psychology variations
-  'psychology': 'CLPS', 'psych': 'CLPS', 'cognitive': 'CLPS', 'behavioral': 'CLPS',
-  'brain': 'NEUR',
-  
-  // Physics variations
-  'physics': 'PHYS', 'physical sciences': 'PHYS', 'mechanics': 'PHYS', 'thermodynamics': 'PHYS',
-  
-  // Chemistry variations
-  'chemistry': 'CHEM', 'chem': 'CHEM', 'organic chemistry': 'CHEM', 'inorganic chemistry': 'CHEM',
-  
-  // Engineering variations
-  'engineering': 'ENGN', 'engn': 'ENGN', 'mechanical': 'ENGN', 'electrical': 'ENGN',
-  'civil': 'ENGN', 'biomedical': 'ENGN',
-  
-  // History variations
-  'history': 'HIST', 'historical': 'HIST', 'hist': 'HIST', 'american history': 'HIST',
-  'world history': 'HIST',
-  
-  // English variations
-  'english': 'ENGL', 'literature': 'ENGL', 'writing': 'ENGL', 'engl': 'ENGL',
-  'creative writing': 'ENGL', 'poetry': 'ENGL',
-  
-  // Philosophy variations
-  'philosophy': 'PHIL', 'philosophical': 'PHIL', 'ethics': 'PHIL', 'phil': 'PHIL', 'logic': 'PHIL',
-  
-  // Political Science variations
-  'political science': 'POLS', 'politics': 'POLS', 'government': 'POLS', 'pols': 'POLS',
-  'international relations': 'INTL', 'intl': 'INTL',
-  
-  // Sociology variations
-  'sociology': 'SOC', 'social': 'SOC', 'society': 'SOC', 'soc': 'SOC',
-  
-  // Anthropology variations
-  'anthropology': 'ANTH', 'cultural': 'ANTH', 'human societies': 'ANTH', 'anth': 'ANTH',
-  
-  // Africana Studies
-  'africana': 'AFRI', 'afri': 'AFRI', 'african american': 'AFRI', 'black studies': 'AFRI',
-  
-  // Art History
-  'art history': 'HIAA', 'hiaa': 'HIAA', 'art': 'HIAA', 'visual arts': 'HIAA',
-  
-  // Classics
-  'classics': 'CLAS', 'classical': 'CLAS', 'greek': 'CLAS', 'latin': 'CLAS', 'clas': 'CLAS',
-  
-  // Comparative Literature
-  'comparative literature': 'COLT', 'colt': 'COLT', 'world literature': 'COLT',
-  
-  // East Asian Studies
-  'east asian': 'EAST', 'east': 'EAST', 'chinese': 'EAST', 'japanese': 'EAST', 'korean': 'EAST',
-  
-  // French Studies
-  'french': 'FREN', 'fren': 'FREN', 'france': 'FREN',
-  
-  // German Studies
-  'german': 'GRMN', 'grmn': 'GRMN', 'germany': 'GRMN',
-  
-  // Hispanic Studies
-  'hispanic': 'HISP', 'hisp': 'HISP', 'spanish': 'HISP', 'latin american': 'HISP',
-  
-  // Italian Studies
-  'italian': 'ITAL', 'ital': 'ITAL', 'italy': 'ITAL',
-  
-  // Portuguese and Brazilian Studies
-  'portuguese': 'POBS', 'pobs': 'POBS', 'brazil': 'POBS',
-  
-  // Slavic Studies
-  'slavic': 'SLAV', 'slav': 'SLAV', 'russian': 'SLAV',
-  
-  // Theatre Arts and Performance Studies
-  'theatre': 'TAPS', 'taps': 'TAPS', 'drama': 'TAPS', 'performance': 'TAPS', 'acting': 'TAPS',
-  
-  // Visual Arts
-  'visual arts': 'VISA', 'visa': 'VISA', 'drawing': 'VISA', 'painting': 'VISA',
-  'sculpture': 'VISA', 'photography': 'VISA',
-  
-  // Music
-  'music': 'MUSC', 'musc': 'MUSC', 'composition': 'MUSC', 'performance': 'MUSC', 'theory': 'MUSC',
-  
-  // Religious Studies
-  'religious studies': 'RELS', 'religion': 'RELS', 'rels': 'RELS', 'theology': 'RELS',
-  
-  // Gender and Sexuality Studies
-  'gender': 'GNSS', 'gnss': 'GNSS', 'women': 'GNSS', 'feminism': 'GNSS', 'sexuality': 'GNSS',
-  
-  // Environmental Studies
-  'environmental': 'ENVS', 'envs': 'ENVS', 'ecology': 'ENVS', 'climate': 'ENVS', 'sustainability': 'ENVS',
-  
-  // Public Health
-  'public health': 'PHP', 'php': 'PHP', 'health': 'PHP', 'epidemiology': 'PHP',
-  
-  // Urban Studies
-  'urban': 'URBN', 'urbn': 'URBN', 'city': 'URBN', 'urban planning': 'URBN'
-};
-
-// Helper function to map subject to department
-const mapSubjectToDepartment = (userInput) => {
-  if (!userInput || typeof userInput !== 'string') {
-    return null;
-  }
+// Simplified subject mapping for core subjects (inline to avoid dependencies)
+const getSubjectDepartment = (userInput) => {
+  if (!userInput || typeof userInput !== 'string') return null;
   
   const lowerInput = userInput.toLowerCase().trim();
   
-  // Direct match
-  if (subjectToDepartmentMap[lowerInput]) {
-    return subjectToDepartmentMap[lowerInput];
-  }
-  
-  // Partial match - find the best match
-  for (const [subject, department] of Object.entries(subjectToDepartmentMap)) {
-    if (lowerInput.includes(subject) || subject.includes(lowerInput)) {
-      return department;
-    }
-  }
-  
-  // Word-based matching for multi-word subjects
-  const words = lowerInput.split(/\s+/);
-  for (const word of words) {
-    if (word.length > 2 && subjectToDepartmentMap[word]) {
-      return subjectToDepartmentMap[word];
-    }
-  }
+  // Core subject mappings
+  if (lowerInput.includes('computer') || lowerInput.includes('cs') || lowerInput.includes('programming') || lowerInput.includes('software')) return 'CSCI';
+  if (lowerInput.includes('math') || lowerInput.includes('calculus') || lowerInput.includes('statistics')) return 'MATH';
+  if (lowerInput.includes('econ') || lowerInput.includes('finance') || lowerInput.includes('business')) return 'ECON';
+  if (lowerInput.includes('bio') || lowerInput.includes('biology') || lowerInput.includes('life')) return 'BIOL';
+  if (lowerInput.includes('psych') || lowerInput.includes('psychology') || lowerInput.includes('cognitive')) return 'CLPS';
+  if (lowerInput.includes('physics') || lowerInput.includes('physical')) return 'PHYS';
+  if (lowerInput.includes('chem') || lowerInput.includes('chemistry')) return 'CHEM';
+  if (lowerInput.includes('engineering') || lowerInput.includes('engn')) return 'ENGN';
+  if (lowerInput.includes('history') || lowerInput.includes('hist')) return 'HIST';
+  if (lowerInput.includes('english') || lowerInput.includes('literature') || lowerInput.includes('writing')) return 'ENGL';
+  if (lowerInput.includes('philosophy') || lowerInput.includes('phil') || lowerInput.includes('ethics')) return 'PHIL';
+  if (lowerInput.includes('political') || lowerInput.includes('politics') || lowerInput.includes('government')) return 'POLS';
+  if (lowerInput.includes('sociology') || lowerInput.includes('social')) return 'SOC';
+  if (lowerInput.includes('anthropology') || lowerInput.includes('cultural')) return 'ANTH';
   
   return null;
 };
 
-// Helper function to get courses by subject using the embedded subject mapper
+// Helper function to get courses by subject using simplified mapping
 const getCoursesBySubject = async (userInput) => {
   try {
-    const department = mapSubjectToDepartment(userInput);
+    const department = getSubjectDepartment(userInput);
     
     if (department) {
       console.log(`🎯 Subject "${userInput}" mapped to department: ${department}`);
@@ -354,45 +234,23 @@ router.post('/ai-recommend', async (req, res) => {
       console.log(`✅ Using ${relevantCourses.length} general courses as fallback`);
     }
 
-    // Check if OpenAI API key is configured or if we want to force database-only mode
-    const forceDatabaseOnly = process.env.FORCE_DATABASE_ONLY === 'true';
-    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your-openai-api-key-here' || process.env.OPENAI_API_KEY === 'sk-dummy-key-for-local-development' || forceDatabaseOnly) {
-      console.log('🔒 Using database-only mode for recommendations - no AI responses');
+    // Always try AI first, with graceful fallback to database courses
+    let recommendations = [];
+    let contextInfo = {};
+    
+    // Check if OpenAI API key is configured
+    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your-openai-api-key-here' && process.env.OPENAI_API_KEY !== 'sk-dummy-key-for-local-development') {
+      console.log('🤖 Attempting AI-powered recommendations...');
       
-      // Enhanced database-only recommendations with subject-based filtering
-      const recommendations = relevantCourses
-        .slice(0, 5)
-        .map(course => ({
-          code: course.code,
-          title: course.name,
-          reason: `This course matches your interests in ${interests} and aligns with your ${detectedMajor || 'academic'} goals. This is a real course from our Brown University database.`,
-          confidence: 'high'
-        }));
+      try {
+        // Build course catalog context string
+        const courseCatalog = relevantCourses.map(course => {
+          const description = course.description ? course.description.substring(0, 150) + '...' : 'No description available';
+          return `${course.code}: ${course.name} — ${description}`;
+        }).join('\n');
 
-      if (recommendations.length === 0) {
-        const generalRecommendations = relevantCourses.slice(0, 3).map(course => ({
-          code: course.code,
-          title: course.name,
-          reason: `Here's a great ${detectedMajor || 'introductory'} course that might interest you! This is a real course from our Brown University database.`,
-          confidence: 'medium'
-        }));
-        
-        return res.json({ recommendations: generalRecommendations, context: { major: detectedMajor } });
-      }
-
-      return res.json({ recommendations, context: { major: detectedMajor } });
-    }
-
-    // Use OpenAI for intelligent recommendations
-    try {
-      // Build course catalog context string
-      const courseCatalog = relevantCourses.map(course => {
-        const description = course.description ? course.description.substring(0, 150) + '...' : 'No description available';
-        return `${course.code}: ${course.name} — ${description}`;
-      }).join('\n');
-
-      // Enhanced system prompt with domain knowledge
-      const systemPrompt = `You are an expert academic advisor at Brown University with deep knowledge of the course catalog and academic requirements.
+        // Enhanced system prompt with domain knowledge
+        const systemPrompt = `You are an expert academic advisor at Brown University with deep knowledge of the course catalog and academic requirements.
 
 DOMAIN KNOWLEDGE:
 - Brown University uses course codes like CSCI (Computer Science), MATH (Mathematics), ECON (Economics), etc.
@@ -427,7 +285,7 @@ Respond in this exact JSON format:
   }
 }`;
 
-      const userPrompt = `Student major: ${detectedMajor || 'Not specified'}
+        const userPrompt = `Student major: ${detectedMajor || 'Not specified'}
 Student interests: ${interests}
 Previous interests: ${context.interests.join(', ')}
 Session context: ${context.conversationHistory.length} previous messages
@@ -437,110 +295,97 @@ ${courseCatalog}
 
 Please recommend 3-5 courses that would be the best fit for this student based on their major, current interests, and previous conversation context. Focus on courses that most closely match their academic goals and provide specific reasons for each recommendation.`;
 
-      // Make OpenAI API call
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
-      });
+        // Make OpenAI API call
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 1000
+        });
 
-      const aiResponse = completion.choices[0].message.content;
-      
-      // Parse AI response safely and validate against real courses
-      let recommendations = [];
-      let contextInfo = {};
-      try {
-        // Clean the response - remove any markdown formatting
-        const cleanedResponse = aiResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-        const parsed = JSON.parse(cleanedResponse);
-        const aiRecommendations = parsed.recommendations || [];
-        contextInfo = parsed.context || {};
+        const aiResponse = completion.choices[0].message.content;
         
-        // STRICT VALIDATION: Only return courses that actually exist in our database
-        recommendations = aiRecommendations
-          .filter(rec => {
-            // Find the exact course in our database
-            const realCourse = relevantCourses.find(course => 
-              course.code === rec.code && course.name === rec.title
-            );
-            return realCourse !== undefined;
-          })
-          .map(rec => {
-            // Get the real course data from our database
-            const realCourse = relevantCourses.find(course => 
-              course.code === rec.code && course.name === rec.title
-            );
-            return {
-              code: realCourse.code,
-              title: realCourse.name,
-              reason: rec.reason || `This course matches your interests in ${interests}.`,
-              confidence: 'high'
-            };
-          });
-        
-        // If AI hallucinated too many fake courses, fall back to subject-based recommendations
-        if (recommendations.length < 2) {
-          console.log('⚠️ AI returned too few valid courses, using subject-based fallback system');
-          recommendations = relevantCourses
-            .slice(0, 5)
-            .map(course => ({
-              code: course.code,
-              title: course.name,
-              reason: `This course matches your interests in ${interests}.`,
-              confidence: 'medium'
-            }));
+        // Parse AI response safely and validate against real courses
+        try {
+          // Clean the response - remove any markdown formatting
+          const cleanedResponse = aiResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+          const parsed = JSON.parse(cleanedResponse);
+          const aiRecommendations = parsed.recommendations || [];
+          contextInfo = parsed.context || {};
+          
+          // STRICT VALIDATION: Only return courses that actually exist in our database
+          recommendations = aiRecommendations
+            .filter(rec => {
+              // Find the exact course in our database
+              const realCourse = relevantCourses.find(course => 
+                course.code === rec.code && course.name === rec.title
+              );
+              return realCourse !== undefined;
+            })
+            .map(rec => {
+              // Get the real course data from our database
+              const realCourse = relevantCourses.find(course => 
+                course.code === rec.code && course.name === rec.title
+              );
+              return {
+                code: realCourse.code,
+                title: realCourse.name,
+                reason: rec.reason || `This course matches your interests in ${interests}.`,
+                confidence: 'high'
+              };
+            });
+          
+          console.log(`✅ AI successfully generated ${recommendations.length} valid recommendations`);
+          
+        } catch (parseError) {
+          console.error('Failed to parse AI response:', parseError);
+          console.log('Raw AI response:', aiResponse);
+          throw new Error('AI response parsing failed');
         }
         
-      } catch (parseError) {
-        console.error('Failed to parse AI response:', parseError);
-        console.log('Raw AI response:', aiResponse);
-        
-        // Fallback to keyword-based recommendations
-        const interestKeywords = interests.toLowerCase().split(' ');
-        recommendations = relevantCourses
-          .filter(course => 
-            interestKeywords.some(keyword => 
-              course.name.toLowerCase().includes(keyword) || 
-              (course.description && course.description.toLowerCase().includes(keyword)) ||
-              course.code.toLowerCase().includes(keyword)
-            )
-          )
-          .slice(0, 5)
-          .map(course => ({
-            code: course.code,
-            title: course.name,
-            reason: `This course matches your interests in ${interests}.`,
-            confidence: 'medium'
-          }));
+      } catch (aiError) {
+        console.error('AI recommendation failed:', aiError);
+        console.log('🔄 Falling back to database-based recommendations...');
       }
-
-      // Update session with bot response
-      updateSessionContext(sessionId, {
-        conversationHistory: [...context.conversationHistory, { type: 'bot', content: 'Provided course recommendations' }]
-      });
-
-      console.log(`✅ AI generated ${recommendations.length} recommendations for ${detectedMajor}`);
-      res.json({ recommendations, context: { major: detectedMajor, ...contextInfo } });
-
-    } catch (openaiError) {
-      console.error('OpenAI API call failed:', openaiError);
+    } else {
+      console.log('🔑 OpenAI API key not configured, using database-based recommendations');
+    }
+    
+    // Fallback to database-based recommendations if AI failed or not configured
+    if (recommendations.length === 0) {
+      console.log('📚 Generating database-based recommendations...');
       
-      // Enhanced fallback with subject-based filtering
-      const recommendations = relevantCourses
+      recommendations = relevantCourses
         .slice(0, 5)
         .map(course => ({
           code: course.code,
           title: course.name,
-          reason: `This course matches your interests in ${interests}.`,
-          confidence: 'medium'
+          reason: `This course matches your interests in ${interests} and aligns with your ${detectedMajor || 'academic'} goals. This is a real course from our Brown University database.`,
+          confidence: 'high'
         }));
 
-      res.json({ recommendations, context: { major: detectedMajor } });
+      if (recommendations.length === 0) {
+        const generalRecommendations = relevantCourses.slice(0, 3).map(course => ({
+          code: course.code,
+          title: course.name,
+          reason: `Here's a great ${detectedMajor || 'introductory'} course that might interest you! This is a real course from our Brown University database.`,
+          confidence: 'medium'
+        }));
+        
+        recommendations = generalRecommendations;
+      }
     }
+
+    // Update session with bot response
+    updateSessionContext(sessionId, {
+      conversationHistory: [...context.conversationHistory, { type: 'bot', content: 'Provided course recommendations' }]
+    });
+
+    console.log(`✅ Generated ${recommendations.length} recommendations for ${detectedMajor}`);
+    res.json({ recommendations, context: { major: detectedMajor, ...contextInfo } });
 
   } catch (error) {
     console.error('❌ Error generating AI recommendations:', error);
@@ -565,76 +410,34 @@ router.post('/chat', async (req, res) => {
       conversationHistory: [...context.conversationHistory, { type: 'user', content: message }]
     });
 
-        // Check if OpenAI API key is configured or if we want to force database-only mode
-    const forceDatabaseOnly = process.env.FORCE_DATABASE_ONLY === 'true';
-    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your-openai-api-key-here' || process.env.OPENAI_API_KEY === 'sk-dummy-key-for-local-development' || forceDatabaseOnly) {
-      console.log('🔒 Using database-only mode - no AI responses');
-      
-      // Enhanced database-only responses with subject-based filtering
-      let relevantCourses = [];
-      
-      // First try to get courses by subject from the user's message
-      const subjectCourses = await getCoursesBySubject(message);
-      if (subjectCourses.length > 0) {
-        relevantCourses = subjectCourses;
-        console.log(`🔒 Database-only mode: Found ${subjectCourses.length} courses for subject: "${message}"`);
-      } else if (context.major) {
-        // Fallback to major-based courses if no subject match
-        relevantCourses = await getRelevantCoursesByMajor(context.major);
-        console.log(`🔒 Database-only mode: Using ${relevantCourses.length} courses for major: "${context.major}"`);
-      } else {
-        // Get some general courses if no major context
-        const generalResult = await pool.query('SELECT code, name, description FROM courses ORDER BY code LIMIT 20');
-        relevantCourses = generalResult.rows;
-        console.log(`🔒 Database-only mode: Using ${relevantCourses.length} general courses`);
-      }
-      
-      // Find courses that match the user's message (additional keyword filtering)
-      const interestKeywords = message.toLowerCase().split(' ');
-      const matchingCourses = relevantCourses
-        .filter(course => 
-          interestKeywords.some(keyword => 
-            course.name.toLowerCase().includes(keyword) || 
-            (course.description && course.description.toLowerCase().includes(keyword)) ||
-            course.code.toLowerCase().includes(keyword)
-          )
-        )
-        .slice(0, 3);
-      
-      let response;
-      if (matchingCourses.length > 0) {
-        const courseList = matchingCourses.map(c => `**${c.code}**: ${c.name}`).join('\n');
-        response = `I found some courses that might interest you:\n\n${courseList}\n\nThese are real courses from our Brown University catalog!`;
-      } else {
-        response = "I'm here to help you find great courses at Brown University! Try asking me about specific subjects, majors, or what you're interested in learning. I can only provide information about courses that actually exist in our database.";
-      }
-      
-      return res.json({
-        response: response,
-        context: { major: context.major }
-      });
-    }
-
-    // Get relevant course context based on message content and major
-    let courseContext = '';
-    let relevantCourses = [];
+    // Always try AI first, with graceful fallback to database responses
+    let response = '';
     
-    // First try to get courses by subject from the user's message
-    const subjectCourses = await getCoursesBySubject(message);
-    if (subjectCourses.length > 0) {
-      relevantCourses = subjectCourses;
-      console.log(`🎯 Chat: Found ${subjectCourses.length} courses for subject in message: "${message}"`);
-    } else if (context.major) {
-      // Fallback to major-based courses if no subject match
-      relevantCourses = await getRelevantCoursesByMajor(context.major);
-      console.log(`🎯 Chat: Using ${relevantCourses.length} courses for major: "${context.major}"`);
-    }
-    
-    if (relevantCourses.length > 0) {
-      courseContext = relevantCourses.slice(0, 10).map(c => `${c.code}: ${c.name}`).join(', ');
-    }
+    // Check if OpenAI API key is configured
+    if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your-openai-api-key-here' && process.env.OPENAI_API_KEY !== 'sk-dummy-key-for-local-development') {
+      console.log('🤖 Attempting AI-powered chat response...');
+      
+      try {
+        // Get relevant course context based on message content and major
+        let courseContext = '';
+        let relevantCourses = [];
+        
+        // First try to get courses by subject from the user's message
+        const subjectCourses = await getCoursesBySubject(message);
+        if (subjectCourses.length > 0) {
+          relevantCourses = subjectCourses;
+          console.log(`🎯 Chat: Found ${subjectCourses.length} courses for subject in message: "${message}"`);
+        } else if (context.major) {
+          // Fallback to major-based courses if no subject match
+          relevantCourses = await getRelevantCoursesByMajor(context.major);
+          console.log(`🎯 Chat: Using ${relevantCourses.length} courses for major: "${context.major}"`);
+        }
+        
+        if (relevantCourses.length > 0) {
+          courseContext = relevantCourses.slice(0, 10).map(c => `${c.code}: ${c.name}`).join(', ');
+        }
 
-    const systemPrompt = `You are BrunoBot, a knowledgeable and friendly AI course advisor at Brown University. You help students find courses and provide academic guidance.
+        const systemPrompt = `You are BrunoBot, a knowledgeable and friendly AI course advisor at Brown University. You help students find courses and provide academic guidance.
 
 CRITICAL RULES - NEVER BREAK THESE:
 1. ONLY mention courses that are explicitly provided in the RELEVANT COURSES section
@@ -666,29 +469,81 @@ IMPORTANT GUIDELINES:
 - If the user mentions computer science, suggest relevant CSCI and APMA courses from the provided list
 - Provide actionable next steps when possible`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: message }
-      ],
-      temperature: 0.7,
-      max_tokens: 300
-    });
+        const completion = await openai.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: message }
+          ],
+          temperature: 0.7,
+          max_tokens: 300
+        });
 
-    const response = completion.choices[0].message.content;
-
-    // Validate the response to ensure no fake courses are mentioned
-    const validationCourses = context.major ? await getRelevantCoursesByMajor(context.major) : [];
-    const validatedResponse = await validateCourseResponse(response, validationCourses);
+        response = completion.choices[0].message.content;
+        
+        // Validate the response to ensure no fake courses are mentioned
+        const validationCourses = context.major ? await getRelevantCoursesByMajor(context.major) : [];
+        response = await validateCourseResponse(response, validationCourses);
+        
+        console.log('✅ AI chat response generated successfully');
+        
+      } catch (aiError) {
+        console.error('AI chat failed:', aiError);
+        console.log('🔄 Falling back to database-based response...');
+      }
+    } else {
+      console.log('🔑 OpenAI API key not configured, using database-based response');
+    }
+    
+    // Fallback to database-based response if AI failed or not configured
+    if (!response) {
+      console.log('📚 Generating database-based response...');
+      
+      let relevantCourses = [];
+      
+      // First try to get courses by subject from the user's message
+      const subjectCourses = await getCoursesBySubject(message);
+      if (subjectCourses.length > 0) {
+        relevantCourses = subjectCourses;
+        console.log(`🔒 Database fallback: Found ${subjectCourses.length} courses for subject: "${message}"`);
+      } else if (context.major) {
+        // Fallback to major-based courses if no subject match
+        relevantCourses = await getRelevantCoursesByMajor(context.major);
+        console.log(`🔒 Database fallback: Using ${relevantCourses.length} courses for major: "${context.major}"`);
+      } else {
+        // Get some general courses if no major context
+        const generalResult = await pool.query('SELECT code, name, description FROM courses ORDER BY code LIMIT 20');
+        relevantCourses = generalResult.rows;
+        console.log(`🔒 Database fallback: Using ${relevantCourses.length} general courses`);
+      }
+      
+      // Find courses that match the user's message (additional keyword filtering)
+      const interestKeywords = message.toLowerCase().split(' ');
+      const matchingCourses = relevantCourses
+        .filter(course => 
+          interestKeywords.some(keyword => 
+            course.name.toLowerCase().includes(keyword) || 
+            (course.description && course.description.toLowerCase().includes(keyword)) ||
+            course.code.toLowerCase().includes(keyword)
+          )
+        )
+        .slice(0, 3);
+      
+      if (matchingCourses.length > 0) {
+        const courseList = matchingCourses.map(c => `**${c.code}**: ${c.name}`).join('\n');
+        response = `I found some courses that might interest you:\n\n${courseList}\n\nThese are real courses from our Brown University catalog!`;
+      } else {
+        response = "I'm here to help you find great courses at Brown University! Try asking me about specific subjects, majors, or what you're interested in learning. I can only provide information about courses that actually exist in our database.";
+      }
+    }
 
     // Update session with bot response
     updateSessionContext(sessionId, {
-      conversationHistory: [...context.conversationHistory, { type: 'bot', content: validatedResponse }]
+      conversationHistory: [...context.conversationHistory, { type: 'bot', content: response }]
     });
 
     res.json({
-      response: validatedResponse,
+      response: response,
       context: { major: context.major }
     });
 
