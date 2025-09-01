@@ -29,7 +29,7 @@ const CourseChatbot = () => {
     {
       id: '1',
       type: 'bot',
-      content: "Hi! I'm your AI course advisor. Tell me what you're interested in, and I'll recommend some great courses for you! 🎓",
+      content: "Hi! I'm your AI course advisor. I can recommend courses for your major! Try asking about specific subjects like: **APMA** (Applied Math), **CSCI** (Computer Science), **MATH**, **ECON** (Economics), **BIOL** (Biology), **CLPS** (Psychology), etc. 🎓",
       timestamp: new Date()
     }
   ]);
@@ -178,7 +178,7 @@ const CourseChatbot = () => {
       {
         id: '1',
         type: 'bot',
-        content: "Hi! I'm your AI course advisor. Tell me what you're interested in, and I'll recommend some great courses for you! 🎓",
+        content: "Hi! I'm your AI course advisor. I can recommend courses for your major! Try asking about specific subjects like: **APMA** (Applied Math), **CSCI** (Computer Science), **MATH**, **ECON** (Economics), **BIOL** (Biology), **CLPS** (Psychology), etc. 🎓",
         timestamp: new Date()
       }
     ]);

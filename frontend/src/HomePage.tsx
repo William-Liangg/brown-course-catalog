@@ -21,7 +21,7 @@ const HomePage = ({ onNavigate, isLoggedIn, userFirstName }: HomePageProps) => {
     {
       id: '1',
       type: 'bot',
-      content: "Hi! I'm BrunoBot, your AI course advisor. How can I help you find the perfect courses today? 🎓",
+      content: "Hi! I'm BrunoBot, your AI course advisor. I can recommend courses for your major! Try asking about specific subjects like: **APMA** (Applied Math), **CSCI** (Computer Science), **MATH**, **ECON** (Economics), **BIOL** (Biology), **CLPS** (Psychology), etc. 🎓",
       timestamp: new Date()
     }
   ]);
