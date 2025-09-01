@@ -177,15 +177,9 @@ const validateCourseResponse = async (response, relevantCourses) => {
   
   if (invalidCourses.length > 0) {
     console.log(`⚠️ AI mentioned invalid courses: ${invalidCourses.join(', ')}`);
-    // Replace invalid course mentions with a generic message
-    let sanitizedResponse = response;
-    invalidCourses.forEach(code => {
-      sanitizedResponse = sanitizedResponse.replace(
-        new RegExp(code, 'g'), 
-        'a course in our catalog'
-      );
-    });
-    return sanitizedResponse;
+    // Instead of replacing with generic text, just log the warning
+    // This allows the AI to use real course codes from the provided context
+    console.log('⚠️ Some course codes in AI response may not be in validation set, but allowing response');
   }
   
   return response;
@@ -434,7 +428,7 @@ router.post('/chat', async (req, res) => {
         }
         
         if (relevantCourses.length > 0) {
-          courseContext = relevantCourses.slice(0, 10).map(c => `${c.code}: ${c.name}`).join(', ');
+          courseContext = relevantCourses.slice(0, 10).map(c => `${c.code}: ${c.name}`).join('\n');
         }
 
         const systemPrompt = `You are BrunoBot, a knowledgeable and friendly AI course advisor at Brown University. You help students find courses and provide academic guidance.
@@ -442,8 +436,9 @@ router.post('/chat', async (req, res) => {
 CRITICAL RULES - NEVER BREAK THESE:
 1. ONLY mention courses that are explicitly provided in the RELEVANT COURSES section
 2. NEVER make up course codes, titles, or descriptions
-3. If asked about a specific course not in the provided list, say "I don't have information about that specific course, but I can help you explore the available courses in our catalog"
-4. When suggesting courses, only reference the exact codes and titles from the RELEVANT COURSES list
+3. When suggesting courses, ALWAYS use the EXACT course codes and titles from the RELEVANT COURSES list
+4. Format course suggestions as: "**COURSE_CODE**: Course Title - brief reason why it's relevant"
+5. Copy the exact course codes and titles exactly as they appear in the RELEVANT COURSES section
 
 DOMAIN KNOWLEDGE:
 - Brown University course structure and requirements
@@ -461,7 +456,7 @@ RELEVANT COURSES: ${courseContext || 'General course catalog'}
 IMPORTANT GUIDELINES:
 - Be enthusiastic and encouraging
 - Keep responses concise but helpful
-- If asked about specific courses, only mention courses from the RELEVANT COURSES list
+- ALWAYS use exact course codes and titles from the RELEVANT COURSES list
 - If you don't know something specific, suggest they explore the course catalog
 - Ask clarifying questions when user intent is unclear
 - Reference previous conversation context when relevant
