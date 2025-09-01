@@ -211,16 +211,16 @@ const CourseChatbot = () => {
       {/* Chatbot Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 bg-amber-600 text-white p-4 rounded-full shadow-lg hover:bg-amber-700 transition-all duration-200 z-50"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 bg-amber-600 text-white p-3 md:p-4 rounded-full shadow-lg hover:bg-amber-700 transition-all duration-200 z-50"
       >
-        {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        {isOpen ? <X className="w-5 h-5 md:w-6 md:h-6" /> : <MessageCircle className="w-5 h-5 md:w-6 md:h-6" />}
       </button>
 
       {/* Chatbot Modal */}
       {isOpen && (
-        <div className="fixed bottom-20 right-6 w-96 h-[500px] bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col z-50">
+        <div className="fixed inset-0 md:bottom-20 md:right-6 md:w-96 md:h-[500px] w-full h-full md:rounded-xl bg-white shadow-2xl border border-gray-200 flex flex-col z-50">
           {/* Header */}
-          <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-4 rounded-t-xl">
+          <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-4 md:rounded-t-xl">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Bot className="w-5 h-5" />
@@ -234,7 +234,14 @@ const CourseChatbot = () => {
                 >
                   <RefreshCw className="w-4 h-4" />
                 </button>
-                <div className="flex items-center space-x-1">
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="md:hidden text-white hover:text-amber-200 transition-colors"
+                  title="Close chat"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <div className="hidden md:flex items-center space-x-1">
                   <Sparkles className="w-4 h-4" />
                   <span className="text-xs">Powered by AI</span>
                 </div>
@@ -248,22 +255,22 @@ const CourseChatbot = () => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] ${message.type === 'user' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg p-3`}>
+                <div className={`max-w-[85%] md:max-w-[80%] ${message.type === 'user' ? 'bg-amber-600 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg p-2 md:p-3`}>
                   <div className="flex items-start space-x-2">
                     {message.type === 'bot' && <Bot className="w-4 h-4 mt-0.5 flex-shrink-0" />}
                     <div className="flex-1">
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm md:text-sm leading-relaxed">{message.content}</p>
                       
                       {/* Recommendations */}
                       {message.recommendations && (
                         <div className="mt-3 space-y-2">
                           {message.recommendations.map((rec, index) => (
-                            <div key={index} className="bg-white rounded-lg p-3 border border-gray-200">
+                            <div key={index} className="bg-white rounded-lg p-2 md:p-3 border border-gray-200">
                               <div className="flex-1">
-                                <div className="flex items-center justify-between mb-2">
+                                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2 space-y-1 md:space-y-0">
                                   <h4 className="font-semibold text-gray-900 text-sm">
                                     {rec.code} - {rec.title}
                                   </h4>
@@ -285,7 +292,7 @@ const CourseChatbot = () => {
             {/* Loading indicator */}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 text-gray-800 rounded-lg p-3">
+                <div className="bg-gray-100 text-gray-800 rounded-lg p-2 md:p-3">
                   <div className="flex items-center space-x-2">
                     <Bot className="w-4 h-4" />
                     <div className="flex space-x-1">
@@ -300,7 +307,7 @@ const CourseChatbot = () => {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-3 md:p-4 border-t border-gray-200">
             <div className="flex space-x-2">
               <input
                 type="text"
@@ -308,13 +315,13 @@ const CourseChatbot = () => {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Tell me what you're interested in..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
+                className="flex-1 px-3 py-2 md:py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent text-sm"
                 disabled={isLoading}
               />
               <button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isLoading}
-                className="bg-amber-600 text-white p-2 rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-amber-600 text-white p-2 rounded-lg hover:bg-amber-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
               >
                 <Send className="w-4 h-4" />
               </button>
