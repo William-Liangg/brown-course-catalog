@@ -218,7 +218,7 @@ const CourseChatbot = () => {
 
       {/* Chatbot Modal */}
       {isOpen && (
-        <div className="fixed inset-0 md:bottom-20 md:right-6 md:w-96 md:h-[500px] w-full h-full md:rounded-xl bg-white shadow-2xl border border-gray-200 flex flex-col z-50">
+        <div className="fixed inset-0 md:inset-auto md:bottom-20 md:right-6 md:w-96 md:h-[500px] md:rounded-xl bg-white shadow-2xl border border-gray-200 flex flex-col z-50">
           {/* Header */}
           <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-4 md:rounded-t-xl">
             <div className="flex items-center justify-between">
